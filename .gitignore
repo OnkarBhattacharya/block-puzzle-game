@@ -1,19 +1,17 @@
+# Node.js
 node_modules/
+npm-debug.log
+yarn-error.log
+
+# Expo
 .expo/
 .expo-shared/
-npm-debug.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
-web-build/
 dist/
 
-# Firebase
-.firebase/
-firebaseConfig.js
+# IDE files
+.idea/
+.vscode/
 
-# macOS
+# OS files
 .DS_Store
+Thumbs.db

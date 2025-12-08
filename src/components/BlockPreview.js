@@ -1,56 +1,47 @@
-import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import Block from './Block';
+import { getRandomBlock } from '../utils/blocks';
 
-const BlockPreview = () => {
+const BlockPreview = ({ onBlockSelect }) => {
+  const [blocks, setBlocks] = useState([]);
+
+  useEffect(() => {
+    generateNewBlocks();
+  }, []);
+
+  const generateNewBlocks = () => {
+    const newBlocks = [getRandomBlock(), getRandomBlock(), getRandomBlock()];
+    setBlocks(newBlocks);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Next Blocks</Text>
-      <View style={styles.previewContainer}>
-        {/* Placeholder for block previews */}
-        <View style={styles.blockSlot}>
-          <View style={styles.miniBlock} />
+      {blocks.map((block, index) => (
+        <View key={index} style={styles.blockSlot}>
+          <Block block={block} onDrop={() => {}} />
         </View>
-        <View style={styles.blockSlot}>
-          <View style={styles.miniBlock} />
-        </View>
-        <View style={styles.blockSlot}>
-          <View style={styles.miniBlock} />
-        </View>
-      </View>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-  },
-  previewContainer: {
     flexDirection: 'row',
-    gap: 15,
+    justifyContent: 'space-around',
+    padding: 20,
+    backgroundColor: '#f0f0f0',
   },
   blockSlot: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    width: 80,
+    height: 80,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: '#ddd',
-  },
-  miniBlock: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#4a90e2',
-    borderRadius: 4,
   },
 });
 

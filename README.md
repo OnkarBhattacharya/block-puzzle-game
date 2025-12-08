@@ -1,14 +1,18 @@
-# Block Puzzle Game - Starter Template
+# GridLock Game - Refactored Template
 
-Minimal React Native block puzzle game with AdMob monetization ready.
+Modern React Native GridLock game with a scalable architecture using Hooks and Context API. AdMob and Firebase Analytics are integrated.
 
 ## Features
 
 ✅ 8x8 grid puzzle game  
 ✅ Score tracking with high score persistence  
-✅ AdMob integration structure (banner, interstitial, rewarded)  
+✅ Centralized state management with Context API
+✅ Custom Hooks for game logic, settings, and achievements
+✅ Screen navigation and modular components
+✅ AdMob integration (banner, interstitial, rewarded)  
+✅ Firebase Analytics for event tracking
 ✅ Game over modal with continue option  
-✅ Clean, simple UI  
+✅ Clean, simple UI with themes
 
 ## Quick Start
 
@@ -36,72 +40,70 @@ npm run web
 
 ```
 block-puzzle-game/
-├── App.js                      # Main app component
+├── App.js                      # Root component with navigation and context providers
 ├── src/
-│   ├── components/
-│   │   ├── GameBoard.js        # 8x8 grid game logic
-│   │   └── BlockPreview.js     # Next blocks preview
-│   ├── services/
-│   │   └── AdManager.js        # AdMob integration
-│   └── utils/
-│       └── storage.js          # AsyncStorage helpers
+│   ├── components/             # Reusable UI components (GameBoard, Block, etc.)
+│   ├── context/
+│   │   └── AppContext.js       # Global state management for the app
+│   ├── hooks/                  # Custom hooks for managing complex logic
+│   │   ├── useGame.js     # Core game logic
+│   │   ├── useAppState.js      # Settings management (theme, sound)
+│   │   └── useAchievements.js  # Achievement tracking
+│   ├── screens/                # Top-level screen components
+│   │   ├── GameScreen.js       # Main game screen
+│   │   ├── SettingsScreen.js   # App settings
+│   │   └── ...                 # Other screens (Achievements, Leaderboard)
+│   ├── services/               # Third-party service integrations
+│   │   ├── AdManager.js        # AdMob integration
+│   │   ├── AnalyticsManager.js # Firebase Analytics integration
+│   │   ├── SoundManager.js     # Sound effects
+│   │   └── LeaderboardManager.js # Leaderboard logic
+│   └── utils/                  # Utility functions and constants (blocks, themes)
 ├── assets/                     # Images, icons
 ├── app.json                    # Expo config
 └── package.json
 ```
 
-## Monetization Setup
+## Monetization & Analytics
 
-### Step 1: Create AdMob Account
-1. Go to https://admob.google.com
-2. Create account and add your app
-3. Generate ad unit IDs for:
-   - Banner Ad
-   - Interstitial Ad
-   - Rewarded Video Ad
+### AdMob Setup
 
-### Step 2: Configure AdMob
+Edit `src/services/AdManager.js` and replace test IDs with your actual AdMob unit IDs.
 
-Edit `src/services/AdManager.js` and replace test IDs:
+### Firebase Setup
 
-```javascript
-// Replace TestIds with your actual AdMob unit IDs
-const BANNER_ID = 'ca-app-pub-xxxxx/xxxxx';
-const INTERSTITIAL_ID = 'ca-app-pub-xxxxx/xxxxx';
-const REWARDED_ID = 'ca-app-pub-xxxxx/xxxxx';
-```
-
-### Step 3: Uncomment Ad Code
-
-Uncomment the ad implementation code in `AdManager.js` once you have real ad unit IDs.
+1.  Create a Firebase project at https://console.firebase.google.com
+2.  Follow the instructions to add your iOS and Android apps to the project.
+3.  Download the `google-services.json` (for Android) and `GoogleService-Info.plist` (for iOS) configuration files.
+4.  Place the files in the correct locations in your project.
 
 ## Ad Strategy
 
 - **Banner Ad**: Always visible at bottom (lowest revenue, constant)
-- **Interstitial Ad**: Shows every 3 games (medium revenue)
+- **Interstitial Ad**: Shows every 3 games (medium revenue). Logic for this is implemented in `src/hooks/useGame.js`.
 - **Rewarded Video Ad**: Optional continue after game over (highest revenue)
 
 ## Development Roadmap
 
 ### Phase 1: Core Gameplay (Week 1-2)
-- [ ] Implement drag-and-drop block placement
-- [ ] Add 3 random block shapes per turn
-- [ ] Improve line clearing animation
-- [ ] Add sound effects
-- [ ] Implement proper game over detection
+- [x] Implement drag-and-drop block placement
+- [x] Add 3 random block shapes per turn
+- [x] Improve line clearing animation
+- [x] Add sound effects
+- [x] Implement proper game over detection
 
 ### Phase 2: Polish (Week 3)
-- [ ] Add particle effects for line clears
-- [ ] Improve UI/UX design
-- [ ] Add settings menu (sound on/off)
-- [ ] Create app icon and splash screen
-- [ ] Add haptic feedback
+- [x] Add particle effects for line clears
+- [x] Improve UI/UX design
+- [x] Add settings menu (sound on/off)
+- [x] Create app icon and splash screen
+- [x] Add haptic feedback
 
-### Phase 3: Monetization (Week 4)
-- [ ] Integrate real AdMob ads
-- [ ] Test ad placement and frequency
-- [ ] Add Firebase Analytics
-- [ ] Implement A/B testing for ad timing
+### Phase 3: Monetization & Analytics (Week 4)
+- [x] Integrate real AdMob ads
+- [x] Test ad placement and frequency
+- [x] Add Firebase Analytics
+- [x] Implement A/B testing for ad timing
 
 ### Phase 4: Launch (Week 5-6)
 - [ ] Create store screenshots

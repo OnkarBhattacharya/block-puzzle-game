@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   HIGH_SCORE: '@high_score',
   GAMES_PLAYED: '@games_played',
+  GAME_STATE: '@game_state',
 };
 
 export const saveScore = async (score) => {
@@ -39,4 +40,23 @@ export const getGamesPlayed = async () => {
     console.error('Error loading games played:', error);
     return 0;
   }
+};
+
+export const saveGameState = async (state) => {
+    try {
+        const jsonState = JSON.stringify(state);
+        await AsyncStorage.setItem(KEYS.GAME_STATE, jsonState);
+    } catch (error) {
+        console.error('Error saving game state:', error);
+    }
+};
+
+export const loadGameState = async () => {
+    try {
+        const jsonState = await AsyncStorage.getItem(KEYS.GAME_STATE);
+        return jsonState ? JSON.parse(jsonState) : null;
+    } catch (error) {
+        console.error('Error loading game state:', error);
+        return null;
+    }
 };
