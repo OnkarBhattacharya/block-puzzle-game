@@ -22,12 +22,6 @@
       },
       "package": "com.yourcompany.gridlock"
     },
-    "plugins": [
-      "react-native-google-mobile-ads"
-    ],
-    "react-native-google-mobile-ads": {
-      "android_app_id": "ca-app-pub-5692083748872435~4484621594",
-      "ios_app_id": "ca-app-pub-5692083748872435~4484621594"
-    }
+    "plugins": []
   }
 }

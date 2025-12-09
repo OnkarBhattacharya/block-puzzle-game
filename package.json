@@ -14,25 +14,25 @@
     "url": "https://github.com/yourusername/block-puzzle-game.git"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-native-firebase/analytics": "^23.5.0",
-    "@react-native-firebase/app": "^23.5.0",
-    "@react-native-firebase/remote-config": "^23.5.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-firebase/analytics": "^19.2.2",
+    "@react-native-firebase/app": "^19.2.2",
+    "@react-native-firebase/remote-config": "^19.2.2",
     "expo": "^54.0.27",
     "expo-av": "~16.0.8",
     "expo-haptics": "~15.0.8",
     "expo-status-bar": "~3.0.9",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-native": "0.81.5",
-    "react-native-gesture-handler": "^2.29.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native": "^0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
     "react-native-google-mobile-ads": "^13.6.1",
     "react-native-particles": "^0.0.8",
-    "react-native-reanimated": "^4.2.0",
-    "react-native-web": "^0.21.0"
+    "react-native-reanimated": "~4.1.1",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "babel-preset-expo": "^54.0.8"
+    "babel-preset-expo": "~54.0.0"
   }
 }
