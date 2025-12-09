@@ -1,170 +1,238 @@
-# GridLock Game - Refactored Template
+# GridLock - Production-Ready Block Puzzle Game
 
-Modern React Native GridLock game with a scalable architecture using Hooks and Context API. AdMob and Firebase Analytics are integrated.
+Modern React Native block puzzle game built with Expo SDK 54. Features smooth drag-and-drop gameplay, Google AdMob integration, and polished graphics.
 
-## Features
+## ✨ Features
 
-✅ 8x8 grid puzzle game  
-✅ Score tracking with high score persistence  
-✅ Centralized state management with Context API
-✅ Custom Hooks for game logic, settings, and achievements
-✅ Screen navigation and modular components
-✅ AdMob integration (banner, interstitial, rewarded)  
-✅ Firebase Analytics for event tracking
-✅ Game over modal with continue option  
-✅ Clean, simple UI with themes
+✅ **Smooth Gameplay** - Drag-and-drop block placement with gesture handling  
+✅ **Responsive Design** - Adapts to all screen sizes (iOS & Android)  
+✅ **Score System** - High score persistence with AsyncStorage  
+✅ **AdMob Integration** - Banner, interstitial, and rewarded ads  
+✅ **Sound & Haptics** - Audio feedback and vibration effects  
+✅ **Multiple Themes** - 4 color themes (Default, Dark, Forest, Ocean)  
+✅ **Power-ups** - Bomb (3×3 clear) and Shuffle blocks  
+✅ **Daily Challenges** - Achievement system with progress tracking  
+✅ **Game State** - Auto-save and resume functionality
 
-## Quick Start
-
-### 1. Install Dependencies
+## 🚀 Quick Start
 
 ```bash
-cd block-puzzle-game
+# Install dependencies
 npm install
-```
 
-### 2. Run the App
+# Start development server
+npm start
 
-```bash
-# iOS
+# Run on iOS
 npm run ios
 
-# Android
+# Run on Android
 npm run android
-
-# Web (for testing)
-npm run web
 ```
 
-## Project Structure
+## 📱 Tech Stack
+
+- **Expo SDK**: 54.0.0
+- **React**: 18.3.1
+- **React Native**: 0.76.5
+- **Reanimated**: 3.16.0 (smooth animations)
+- **Gesture Handler**: 2.20.0 (drag-and-drop)
+- **Google Mobile Ads**: 14.3.2
+- **AsyncStorage**: 2.1.0
+
+## 📂 Project Structure
 
 ```
-block-puzzle-game/
-├── App.js                      # Root component with navigation and context providers
-├── src/
-│   ├── components/             # Reusable UI components (GameBoard, Block, etc.)
-│   ├── context/
-│   │   └── AppContext.js       # Global state management for the app
-│   ├── hooks/                  # Custom hooks for managing complex logic
-│   │   ├── useGame.js     # Core game logic
-│   │   ├── useAppState.js      # Settings management (theme, sound)
-│   │   └── useAchievements.js  # Achievement tracking
-│   ├── screens/                # Top-level screen components
-│   │   ├── GameScreen.js       # Main game screen
-│   │   ├── SettingsScreen.js   # App settings
-│   │   └── ...                 # Other screens (Achievements, Leaderboard)
-│   ├── services/               # Third-party service integrations
-│   │   ├── AdManager.js        # AdMob integration
-│   │   ├── AnalyticsManager.js # Firebase Analytics integration
-│   │   ├── SoundManager.js     # Sound effects
-│   │   └── LeaderboardManager.js # Leaderboard logic
-│   └── utils/                  # Utility functions and constants (blocks, themes)
-├── assets/                     # Images, icons
-├── app.json                    # Expo config
-└── package.json
+src/
+├── components/
+│   ├── GameBoard.js        # Main game grid with drag-drop
+│   ├── BlockPreview.js     # Block selection area
+│   ├── PauseMenu.js        # Pause overlay
+│   ├── PowerUps.js         # Bomb/shuffle buttons
+│   ├── Rotation.js         # Block rotation
+│   └── DailyChallenge.js   # Challenge display
+├── context/
+│   └── AppContext.js       # Global state (Context API)
+├── hooks/
+│   ├── useGame.js          # Game logic
+│   └── useAppState.js      # UI state & settings
+├── screens/
+│   ├── SplashScreen.js
+│   ├── SettingsScreen.js
+│   ├── AchievementsScreen.js
+│   ├── LeaderboardScreen.js
+│   └── HowToPlayScreen.js
+├── services/
+│   ├── AdManager.js        # AdMob integration
+│   ├── SoundManager.js     # Audio playback
+│   └── AnalyticsManager.js # Event tracking (stub)
+└── utils/
+    ├── blocks.js           # Block shapes (7 Tetris pieces)
+    ├── themes.js           # Color themes
+    ├── storage.js          # AsyncStorage helpers
+    ├── achievements.js     # Achievement definitions
+    └── challenges.js       # Daily challenge logic
 ```
 
-## Monetization & Analytics
+## 🎮 Game Mechanics
 
-### AdMob Setup
+### Block Placement
+- Drag blocks from preview area onto 8×8 grid
+- Blocks cannot overlap or go out of bounds
+- 3 random blocks available at a time
 
-Edit `src/services/AdManager.js` and replace test IDs with your actual AdMob unit IDs.
+### Scoring
+- **Place block**: +1 point per cell
+- **Clear line**: +10 points × combo multiplier
+- **Combo**: Multiplier increases with consecutive clears
 
-### Firebase Setup
+### Power-ups (1 per game)
+- **Bomb**: Clears 3×3 area
+- **Shuffle**: Regenerates available blocks
 
-1.  Create a Firebase project at https://console.firebase.google.com
-2.  Follow the instructions to add your iOS and Android apps to the project.
-3.  Download the `google-services.json` (for Android) and `GoogleService-Info.plist` (for iOS) configuration files.
-4.  Place the files in the correct locations in your project.
+### Game Over
+- No valid moves for any available block
+- Option to watch rewarded ad to continue (+50 points)
 
-## Ad Strategy
+## 💰 AdMob Setup
 
-- **Banner Ad**: Always visible at bottom (lowest revenue, constant)
-- **Interstitial Ad**: Shows every 3 games (medium revenue). Logic for this is implemented in `src/hooks/useGame.js`.
-- **Rewarded Video Ad**: Optional continue after game over (highest revenue)
+### 1. Get Ad Unit IDs
 
-## Development Roadmap
+Create account at https://admob.google.com and generate:
+- Banner Ad ID
+- Interstitial Ad ID  
+- Rewarded Video Ad ID
 
-### Phase 1: Core Gameplay (Week 1-2)
-- [x] Implement drag-and-drop block placement
-- [x] Add 3 random block shapes per turn
-- [x] Improve line clearing animation
-- [x] Add sound effects
-- [x] Implement proper game over detection
+### 2. Update `src/services/AdManager.js`
 
-### Phase 2: Polish (Week 3)
-- [x] Add particle effects for line clears
-- [x] Improve UI/UX design
-- [x] Add settings menu (sound on/off)
-- [x] Create app icon and splash screen
-- [x] Add haptic feedback
-
-### Phase 3: Monetization & Analytics (Week 4)
-- [x] Integrate real AdMob ads
-- [x] Test ad placement and frequency
-- [x] Add Firebase Analytics
-- [x] Implement A/B testing for ad timing
-
-### Phase 4: Launch (Week 5-6)
-- [ ] Create store screenshots
-- [ ] Write app description
-- [ ] Set up privacy policy
-- [ ] Submit to Google Play Store
-- [ ] Submit to Apple App Store
-
-## Game Mechanics to Implement
-
-### Block Shapes (Tetris-style)
 ```javascript
-const BLOCKS = [
-  [[1, 1, 1]],           // Line 3
-  [[1, 1], [1, 1]],      // Square
-  [[1, 1, 1, 1]],        // Line 4
-  [[1], [1], [1]],       // Vertical 3
-  [[1, 1, 0], [0, 1, 1]], // Z-shape
-  // Add more shapes
-];
+const adUnitIds = Platform.select({
+  ios: {
+    banner: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  },
+  android: {
+    banner: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  },
+});
 ```
 
-### Scoring System
-- Place block: +1 point per cell
-- Clear 1 line: +10 points
-- Clear 2 lines: +25 points
-- Clear 3+ lines: +50 points
-- Combo bonus: +10 per consecutive clear
+### 3. Update `app.json`
 
-## Firebase Integration (Optional)
+```json
+"plugins": [
+  [
+    "react-native-google-mobile-ads",
+    {
+      "androidAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+      "iosAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX"
+    }
+  ]
+]
+```
 
-For leaderboards and analytics:
+### Ad Strategy
+- **Banner**: Always visible at bottom
+- **Interstitial**: Every 3 games
+- **Rewarded**: Optional continue after game over
 
+## 🎨 Customization
+
+### Change Themes
+Edit `src/utils/themes.js`:
+```javascript
+export const themes = {
+  default: {
+    backgroundColor: '#f9f9f9',
+    filledColor: '#4a90e2',
+    clearingColor: '#ff6b6b',
+    // ...
+  },
+};
+```
+
+### Adjust Difficulty
+Edit `src/components/GameBoard.js`:
+```javascript
+const GRID_SIZE = 8; // Change grid size
+```
+
+### Change Ad Frequency
+Edit `src/hooks/useGame.js`:
+```javascript
+if (newGamesPlayed % 3 === 0) { // Change frequency
+  AdManager.showInterstitial();
+}
+```
+
+## 🏗️ Building for Production
+
+### Setup EAS Build
 ```bash
-npm install @react-native-firebase/app @react-native-firebase/analytics
+npm install -g eas-cli
+eas login
+eas build:configure
 ```
 
-## Testing
+### Build Android
+```bash
+eas build --platform android
+```
 
-Test on real devices before launch:
-- Different screen sizes
-- Ad loading and display
-- Performance (60 FPS target)
-- Battery usage
-- Network conditions
+### Build iOS
+```bash
+eas build --platform ios
+```
 
-## Revenue Estimates
+## 🧪 Testing Checklist
 
-With 10,000 daily active users:
-- 30,000 game sessions/day
-- 10,000 interstitial ads
-- 2,500 rewarded video ads
-- **Expected: $150-300/day**
+- [ ] Block placement on all grid positions
+- [ ] Line clearing (horizontal & vertical)
+- [ ] Combo multiplier calculation
+- [ ] Game over detection
+- [ ] High score persistence
+- [ ] Sound effects toggle
+- [ ] Haptic feedback toggle
+- [ ] Theme switching
+- [ ] Power-ups functionality
+- [ ] Ad loading (banner, interstitial, rewarded)
+- [ ] Responsive design on different screen sizes
+- [ ] Performance (60 FPS target)
 
-## Support
+## 📝 Known Limitations
 
-For issues or questions:
-1. Check Expo documentation: https://docs.expo.dev
-2. AdMob setup guide: https://docs.page/invertase/react-native-google-mobile-ads
-3. React Native docs: https://reactnative.dev
+- **Firebase Analytics**: Removed (incompatible with Expo managed workflow)
+- **Remote Config**: Hardcoded values instead
+- **Native Modules**: Stay in managed workflow to avoid TurboModule errors
 
-## License
+## 🐛 Troubleshooting
+
+### TurboModule Error
+```bash
+rm -rf ios android
+npx expo start --clear
+```
+
+### Ads Not Showing
+- Using test IDs during development (normal behavior)
+- Check internet connection
+- Verify AdMob account status
+
+### Sound Not Playing
+- Check device volume
+- Toggle sound in settings
+- Verify audio files exist in `src/assets/sounds/`
+
+## 📚 Resources
+
+- [Expo Documentation](https://docs.expo.dev)
+- [AdMob Setup Guide](https://docs.page/invertase/react-native-google-mobile-ads)
+- [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)
+- [EAS Build](https://docs.expo.dev/build/introduction/)
+
+## 📄 License
 
 MIT - Free to use and modify for commercial projects

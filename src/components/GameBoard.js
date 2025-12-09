@@ -1,20 +1,19 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, Vibration, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedGestureHandler,
   withSpring,
-  withTiming,
   runOnJS,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import SoundManager from '../services/SoundManager';
-import { ThemeContext } from '../utils/themes';
 
+const { width } = Dimensions.get('window');
 const GRID_SIZE = 8;
-const CELL_SIZE = 40;
+const CELL_SIZE = Math.floor((width - 60) / GRID_SIZE);
 
 const GameBoard = ({
   grid,
@@ -28,10 +27,8 @@ const GameBoard = ({
   setComboMultiplier,
   soundEnabled,
   hapticsEnabled,
-  isBombActive,
-  onBombPlacement,
+  theme,
 }) => {
-  const { theme } = useContext(ThemeContext);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -76,20 +73,23 @@ const GameBoard = ({
 
     const linesCleared = checkAndClearLines(newGrid);
     if (linesCleared === 0) {
-        setComboMultiplier(1);
+      setComboMultiplier(1);
     } else {
-        if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        if (soundEnabled) SoundManager.playSound('clear');
+      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      if (soundEnabled) SoundManager.playSound('clear');
+      setComboMultiplier(prev => prev + 1);
     }
 
     setGrid(newGrid);
     onScoreUpdate(prev => prev + blocksPlaced + (linesCleared * 10 * comboMultiplier));
     
-    if (checkGameOver(newGrid)) {
-      onGameOver();
-    } else {
-      onBlockPlaced(linesCleared);
-    }
+    setTimeout(() => {
+      if (checkGameOver(newGrid)) {
+        onGameOver();
+      } else {
+        onBlockPlaced(linesCleared);
+      }
+    }, 100);
   };
 
   const gestureHandler = useAnimatedGestureHandler({
@@ -103,11 +103,10 @@ const GameBoard = ({
       translateY.value = ctx.startY + event.translationY;
     },
     onEnd: (event) => {
-      const containerPadding = 20;
-      const boardPadding = 5;
-      const boardTop = containerPadding + 120; 
-      const gridX = Math.floor((event.absoluteX - boardPadding) / CELL_SIZE);
-      const gridY = Math.floor((event.absoluteY - boardTop) / CELL_SIZE);
+      const boardOffset = 30;
+      const headerHeight = 250;
+      const gridX = Math.floor((event.absoluteX - boardOffset) / CELL_SIZE);
+      const gridY = Math.floor((event.absoluteY - headerHeight) / CELL_SIZE);
       runOnJS(handleDrop)(gridX, gridY, activeBlock);
       translateX.value = withSpring(0);
       translateY.value = withSpring(0);
@@ -118,31 +117,26 @@ const GameBoard = ({
   const handleDrop = (gridX, gridY, block) => {
     if (canPlaceBlock(gridX, gridY, block)) {
       placeBlock(gridX, gridY, block);
+      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (soundEnabled) SoundManager.playSound('place');
     } else {
       if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
   };
 
-  const handleBoardTap = (event) => {
-    if (isBombActive) {
-        const { locationX, locationY } = event.nativeEvent;
-        const gridX = Math.floor(locationX / CELL_SIZE);
-        const gridY = Math.floor(locationY / CELL_SIZE);
-        onBombPlacement(gridX, gridY);
-    }
-  };
+
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { translateY: translateY.value }, { scale: scale.value }],
-    position: 'absolute',
-    zIndex: 100,
-    top: 80,
-    left: 40,
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value }
+    ],
   }));
 
   const checkAndClearLines = (currentGrid) => {
     let linesCleared = 0;
-    let newGrid = currentGrid.map(row => [...row]);
+    const newGrid = currentGrid.map(row => [...row]);
     const rowsToClear = [];
     const colsToClear = [];
 
@@ -161,30 +155,22 @@ const GameBoard = ({
     }
 
     if (linesCleared > 0) {
-        setComboMultiplier(prev => prev + linesCleared);
-        rowsToClear.forEach(row => {
-          newGrid[row].fill(2); // Mark for clearing
-        });
-        colsToClear.forEach(col => {
-          newGrid.forEach(row => (newGrid[row][col] = 2));
-        });
-        setGrid(newGrid);
-
-        setTimeout(() => {
-            let gridAfterClear = newGrid.map(r => r.map(c => (c === 2 ? 0 : c)));
-            setGrid(gridAfterClear);
-        }, 300);
+      rowsToClear.forEach(row => newGrid[row].fill(0));
+      colsToClear.forEach(col => {
+        newGrid.forEach(row => (row[col] = 0));
+      });
+      setGrid(newGrid);
     }
+    
     return linesCleared;
   };
 
   const checkGameOver = (currentGrid) => {
+    if (!activeBlock) return false;
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
-        if (currentGrid[y][x] === 0) {
-          if (canPlaceBlock(x, y, activeBlock)) {
-            return false;
-          }
+        if (canPlaceBlock(x, y, activeBlock)) {
+          return false;
         }
       }
     }
@@ -193,61 +179,55 @@ const GameBoard = ({
 
   return (
     <View style={styles.container}>
-      <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View style={animatedStyle}>
-          {activeBlock && !gameOver && (
-            <View>
-              {activeBlock.shape.map((row, rowIndex) => (
-                <View key={rowIndex} style={styles.row}>
-                  {row.map((cell, colIndex) => (
-                    <View
-                      key={`${rowIndex}-${colIndex}`}
-                      style={[
-                        styles.cell,
-                        {
-                          backgroundColor: cell === 1 ? activeBlock.color : 'transparent',
-                          borderColor: cell === 1 ? theme.blockBorderColor : 'transparent',
-                        },
-                      ]}
-                    />
-                  ))}
-                </View>
+      {activeBlock && !gameOver && (
+        <PanGestureHandler onGestureEvent={gestureHandler}>
+          <Animated.View style={[styles.draggableBlock, animatedStyle]}>
+            {activeBlock.shape.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+                {row.map((cell, colIndex) => (
+                  <View
+                    key={`${rowIndex}-${colIndex}`}
+                    style={[
+                      styles.cell,
+                      {
+                        width: CELL_SIZE,
+                        height: CELL_SIZE,
+                        backgroundColor: cell === 1 ? activeBlock.color : 'transparent',
+                        borderColor: cell === 1 ? '#fff' : 'transparent',
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+            ))}
+          </Animated.View>
+        </PanGestureHandler>
+      )}
+      
+      <View style={[styles.board, { 
+        backgroundColor: theme.boardBackground, 
+        borderColor: theme.borderColor,
+        borderWidth: 2,
+      }]}>
+          {grid.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.row}>
+              {row.map((cell, colIndex) => (
+                <View
+                  key={`${rowIndex}-${colIndex}`}
+                  style={[
+                    styles.cell,
+                    {
+                      width: CELL_SIZE,
+                      height: CELL_SIZE,
+                      backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
+                      borderColor: theme.cellBorderColor,
+                    },
+                  ]}
+                />
               ))}
             </View>
-          )}
-        </Animated.View>
-      </PanGestureHandler>
-      <TouchableWithoutFeedback onPress={handleBoardTap}>
-        <View style={[styles.board, { backgroundColor: theme.boardBackground, borderColor: isBombActive ? 'red' : theme.borderColor }]}>
-            {grid.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.row}>
-                {row.map((cell, colIndex) => {
-                  const animatedCell = useSharedValue(1);
-                  if (cell === 2) {
-                    animatedCell.value = withTiming(0, { duration: 300 });
-                  } else {
-                    animatedCell.value = withTiming(1, { duration: 300 });
-                  }
-                  const animatedCellStyle = useAnimatedStyle(() => ({
-                    transform: [{ scale: animatedCell.value }],
-                    backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
-                  }));
-
-                  return (
-                    <Animated.View
-                        key={`${rowIndex}-${colIndex}`}
-                        style={[
-                        styles.cell,
-                        { borderColor: theme.cellBorderColor },
-                        animatedCellStyle,
-                        ]}
-                    />
-                  );
-                })}
-            </View>
-            ))}
+          ))}
         </View>
-      </TouchableWithoutFeedback>
     </View>
   );
 };
@@ -257,21 +237,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    position: 'relative',
+    paddingVertical: 10,
   },
   board: {
     padding: 5,
     borderRadius: 10,
-    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   row: {
     flexDirection: 'row',
   },
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
     borderWidth: 1,
+    borderRadius: 2,
+  },
+  draggableBlock: {
+    position: 'absolute',
+    zIndex: 1000,
+    top: 100,
+    left: width / 2 - 50,
   },
 });
 

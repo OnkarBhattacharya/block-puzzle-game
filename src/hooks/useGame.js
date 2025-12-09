@@ -4,8 +4,7 @@ import { getRandomBlock } from '../utils/blocks';
 import { saveScore, getHighScore, saveGameState, loadGameState } from '../utils/storage';
 import SoundManager from '../services/SoundManager';
 import AdManager from '../services/AdManager';
-import AnalyticsManager from '../services/AnalyticsManager';
-import RemoteConfigManager from '../services/RemoteConfigManager';
+
 import { achievements as achievementsList, getAchievements, saveAchievements } from '../utils/achievements';
 import { getDailyChallenge } from '../utils/challenges';
 
@@ -109,13 +108,10 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
       await saveScore(score);
     }
 
-    AnalyticsManager.logEvent('game_over', { score, continued_with_ad: continuedWithAd });
-
     const newGamesPlayed = gamesPlayed + 1;
     setGamesPlayed(newGamesPlayed);
 
-    const adFrequency = RemoteConfigManager.getInterstitialAdFrequency();
-    if (newGamesPlayed % adFrequency === 0) {
+    if (newGamesPlayed % 3 === 0) {
       AdManager.showInterstitial();
     }
 
@@ -129,7 +125,7 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
     if (hapticsEnabled) Vibration.vibrate(50);
     setHistory([...history, { grid, score, combo: comboMultiplier }]);
 
-    AnalyticsManager.logEvent('block_placed', { lines_cleared: linesCleared });
+
 
     const remainingBlocks = previewBlocks.slice(1);
     if (remainingBlocks.length === 0) {
@@ -162,7 +158,7 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
     AdManager.showRewarded(() => {
       setGameOver(false);
       setScore(score + 50);
-      AnalyticsManager.logEvent('watch_ad_for_continue');
+
     });
   };
 
@@ -212,6 +208,7 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
     setScore,
     highScore,
     gameOver,
+    setGameOver,
     gamesPlayed,
     activeBlock,
     setActiveBlock,

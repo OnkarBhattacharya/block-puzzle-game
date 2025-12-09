@@ -4,16 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import GameBoard from './src/components/GameBoard';
 import BlockPreview from './src/components/BlockPreview';
 import AdManager from './src/services/AdManager';
-import AnalyticsManager from './src/services/AnalyticsManager';
-import RemoteConfigManager from './src/services/RemoteConfigManager';
 import AchievementsScreen from './src/screens/AchievementsScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import HowToPlayScreen from './src/screens/HowToPlayScreen';
 import PauseMenu from './src/components/PauseMenu';
-import PowerUps from './src/components/PowerUps';
-import Rotation from './src/components/Rotation';
+
 import DailyChallenge from './src/components/DailyChallenge';
 import { AppProvider, AppContext } from './src/context/AppContext';
 
@@ -46,23 +43,24 @@ function App() {
     dailyChallengeProgress,
     soundEnabled,
     hapticsEnabled,
-    isBombActive,
-    handleBombPlacement,
+
     handleGameOver,
     handleBlockPlaced,
     handleUndo,
     resetGame,
-    handleRotate,
-    handleUseBomb,
-    handleUseShuffle,
+
     loadGame,
-    prepareApp
+    prepareApp,
+    achievements,
+    setScore,
+    setGameOver,
+    setSoundEnabled,
+    setHapticsEnabled,
+    setTheme
   } = useContext(AppContext);
 
   useEffect(() => {
     AdManager.initialize();
-    AnalyticsManager.initialize();
-    RemoteConfigManager.initialize();
     prepareApp();
     loadGame();
   }, []);
@@ -104,7 +102,7 @@ function App() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
-      <StatusBar style="auto" hidden />
+      <StatusBar style="light" />
       <View style={[styles.header, { backgroundColor: theme.filledColor }]}>
         <Text style={[styles.title, { color: theme.backgroundColor }]}>GridLock</Text>
         <View style={styles.scoreContainer}>
@@ -136,12 +134,13 @@ function App() {
         setComboMultiplier={setComboMultiplier}
         soundEnabled={soundEnabled}
         hapticsEnabled={hapticsEnabled}
-        isBombActive={isBombActive}
-        onBombPlacement={handleBombPlacement}
+        theme={theme}
       />
-      {!gameOver && <Rotation onRotate={handleRotate} theme={theme} />}
-      {!gameOver && <BlockPreview blocks={previewBlocks} onBlockSelect={setActiveBlock} />}
-      {!gameOver && <PowerUps theme={theme} onUseBomb={handleUseBomb} onUseShuffle={handleUseShuffle} />}
+      {!gameOver && (
+        <View style={styles.bottomControls}>
+          <BlockPreview blocks={previewBlocks} onBlockSelect={setActiveBlock} />
+        </View>
+      )}
       {gameOver && !isPaused && (
         <View style={styles.gameOverModal}>
             <View style={[styles.gameOverContent, { backgroundColor: theme.boardBackground }]}>
@@ -182,7 +181,7 @@ function App() {
         onRequestClose={() => {
           setAchievementsVisible(!achievementsVisible);
         }}>
-        <AchievementsScreen achievements={achievements} />
+        <AchievementsScreen achievements={achievements || {}} />
          <TouchableOpacity style={styles.closeButton} onPress={() => setAchievementsVisible(false)}>
             <Text style={styles.buttonText}>Close</Text>
         </TouchableOpacity>
@@ -212,7 +211,7 @@ function App() {
             hapticsEnabled={hapticsEnabled}
             setHapticsEnabled={setHapticsEnabled}
             theme={theme}
-            setTheme={toggleTheme}
+            setTheme={setTheme}
             onClose={() => setSettingsVisible(false)}
         />
       </Modal>
@@ -240,8 +239,13 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingTop: 50,
-        paddingBottom: 20,
+        paddingBottom: 15,
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 5,
     },
     title: {
         fontSize: 28,
@@ -328,8 +332,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    bottomControls: {
+        position: 'absolute',
+        bottom: 60,
+        left: 0,
+        right: 0,
+    },
     bannerAd: {
-        height: 50,
+        height: 60,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'absolute',

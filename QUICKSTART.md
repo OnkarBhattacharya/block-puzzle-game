@@ -1,74 +1,164 @@
 # Quick Start Guide
 
-## 1. Install Node.js
-Download from https://nodejs.org (LTS version)
+## Prerequisites
 
-## 2. Install Expo CLI
-```bash
-npm install -g expo-cli
-```
+- Node.js 18+ ([Download](https://nodejs.org))
+- npm or yarn
+- Expo Go app on your phone (optional)
 
-## 3. Setup Project
+## Installation
+
 ```bash
 cd block-puzzle-game
 npm install
 ```
 
-## 4. Run on Your Phone (Easiest)
+## Running the Game
 
-### Install Expo Go App
-- iOS: https://apps.apple.com/app/expo-go/id982107779
-- Android: https://play.google.com/store/apps/details?id=host.exp.exponent
+### Option 1: Physical Device (Recommended)
 
-### Start Development Server
-```bash
-npm start
-```
+1. **Install Expo Go**
+   - iOS: [App Store](https://apps.apple.com/app/expo-go/id982107779)
+   - Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
 
-Scan QR code with:
-- iOS: Camera app
-- Android: Expo Go app
+2. **Start Server**
+   ```bash
+   npm start
+   ```
 
-## 5. Run on Simulator/Emulator
+3. **Scan QR Code**
+   - iOS: Use Camera app
+   - Android: Use Expo Go app
 
-### iOS (Mac only)
+### Option 2: iOS Simulator (Mac Only)
+
 ```bash
 npm run ios
 ```
 
-### Android
+### Option 3: Android Emulator
+
 ```bash
 npm run android
 ```
 
-## Next Steps
+## Game Controls
 
-1. **Test the game** - Tap cells to fill them, clear lines to score
-2. **Customize colors** - Edit styles in `App.js` and components
-3. **Add real gameplay** - Implement block shapes and drag-drop
-4. **Setup AdMob** - Follow README.md monetization section
-5. **Build for stores** - Use `expo build:android` or `expo build:ios`
+- **Drag blocks** from bottom preview onto grid
+- **Tap Pause** to access settings
+- **Clear lines** by filling rows or columns
+- **Use power-ups** strategically (bomb/shuffle)
+
+## Testing Features
+
+✅ Drag-and-drop block placement  
+✅ Line clearing animation  
+✅ Score tracking  
+✅ Sound effects (toggle in settings)  
+✅ Haptic feedback  
+✅ Theme switching  
+✅ Game over and restart  
+✅ Ad placeholders (test ads)
 
 ## Common Issues
 
-### "Command not found: expo"
+### Module Resolution Error
 ```bash
-npm install -g expo-cli
-```
-
-### "Module not found"
-```bash
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 npm install
+npx expo start --clear
 ```
 
-### Port already in use
+### TurboModule Error
 ```bash
-npm start -- --port 19001
+rm -rf ios android
+npx expo start --clear
 ```
 
-## Resources
+### Port Already in Use
+```bash
+npx expo start --port 19001
+```
 
-- Expo Docs: https://docs.expo.dev
-- React Native: https://reactnative.dev
-- AdMob Setup: https://admob.google.com
+### Ads Not Showing
+Normal during development - using test ad IDs.
+
+## Customization
+
+### Change Colors
+Edit `src/utils/themes.js`
+
+### Adjust Grid Size
+Edit `src/components/GameBoard.js`:
+```javascript
+const GRID_SIZE = 8; // Change this
+```
+
+### Change Ad Frequency
+Edit `src/hooks/useGame.js`:
+```javascript
+if (newGamesPlayed % 3 === 0) { // Change 3
+  AdManager.showInterstitial();
+}
+```
+
+## Next Steps
+
+1. ✅ Test all game features
+2. ✅ Customize themes and colors
+3. ✅ Setup AdMob account (see MONETIZATION.md)
+4. ✅ Replace test ad IDs
+5. ✅ Create privacy policy
+6. ✅ Build for production (see README.md)
+7. ✅ Submit to app stores
+
+## Development Tips
+
+- Changes hot-reload automatically
+- Check terminal for errors
+- Test on real device before publishing
+- Use `npx expo start --clear` to clear cache
+- Monitor performance with React DevTools
+
+## Building for Production
+
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login
+eas login
+
+# Configure
+eas build:configure
+
+# Build Android
+eas build --platform android
+
+# Build iOS
+eas build --platform ios
+```
+
+## Support
+
+- Check terminal for error messages
+- Review [Expo Forums](https://forums.expo.dev)
+- See [Troubleshooting](README.md#troubleshooting) in README
+
+## Performance Tips
+
+- Test on real devices (simulators are slower)
+- Target 60 FPS gameplay
+- Monitor memory usage
+- Optimize images if added
+- Test on low-end devices
+
+## Ready to Publish?
+
+- [ ] All features tested
+- [ ] Real AdMob IDs configured
+- [ ] Privacy policy created
+- [ ] App icons and splash screen ready
+- [ ] Tested on multiple devices
+- [ ] Performance optimized
+- [ ] Store listings prepared

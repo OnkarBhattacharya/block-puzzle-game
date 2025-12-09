@@ -1,24 +1,21 @@
-
-import React from 'react';
-
 export const themes = {
   default: {
     backgroundColor: '#f9f9f9',
     filledColor: '#4a90e2',
-    clearingColor: 'tomato',
-    boardBackground: '#fff',
-    borderColor: '#ddd',
-    cellBorderColor: '#eee',
-    blockBorderColor: '#fff',
+    clearingColor: '#ff6b6b',
+    boardBackground: '#ffffff',
+    borderColor: '#e0e0e0',
+    cellBorderColor: '#f0f0f0',
+    blockBorderColor: '#ffffff',
   },
   dark: {
-    backgroundColor: '#333',
-    filledColor: '#9c27b0',
-    clearingColor: '#ffeb3b',
-    boardBackground: '#424242',
-    borderColor: '#616161',
-    cellBorderColor: '#555',
-    blockBorderColor: '#fff',
+    backgroundColor: '#2c3e50',
+    filledColor: '#9b59b6',
+    clearingColor: '#f39c12',
+    boardBackground: '#34495e',
+    borderColor: '#7f8c8d',
+    cellBorderColor: '#4a5f7f',
+    blockBorderColor: '#ffffff',
   },
   forest: {
     backgroundColor: '#e8f5e9',
@@ -26,18 +23,16 @@ export const themes = {
     clearingColor: '#ff9800',
     boardBackground: '#c8e6c9',
     borderColor: '#a5d6a7',
-    cellBorderColor: '#b2dfdb',
-    blockBorderColor: '#fff',
+    cellBorderColor: '#dcedc8',
+    blockBorderColor: '#ffffff',
   },
   ocean: {
     backgroundColor: '#e0f7fa',
-    filledColor: '#03a9f4',
-    clearingColor: '#f44336',
-    boardBackground: '#b3e5fc',
-    borderColor: '#81d4fa',
-    cellBorderColor: '#90caf9',
-    blockBorderColor: '#fff',
+    filledColor: '#00bcd4',
+    clearingColor: '#ff5722',
+    boardBackground: '#b2ebf2',
+    borderColor: '#80deea',
+    cellBorderColor: '#b2ebf2',
+    blockBorderColor: '#ffffff',
   },
 };
-
-export const ThemeContext = React.createContext({ theme: themes.default, setTheme: () => {} });

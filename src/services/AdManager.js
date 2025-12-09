@@ -1,29 +1,44 @@
 import React from 'react';
-import { Platform } from 'react-native';
-import { BannerAd, BannerAdSize, InterstitialAd, AdEventType, RewardedAd, RewardedAdEventType, AppOpenAd } from 'react-native-google-mobile-ads';
+import { Platform, View, Text, StyleSheet } from 'react-native';
+
+let BannerAd, BannerAdSize, InterstitialAd, RewardedAd, AdEventType, RewardedAdEventType, GoogleMobileAds;
+
+try {
+  const ads = require('react-native-google-mobile-ads');
+  BannerAd = ads.BannerAd;
+  BannerAdSize = ads.BannerAdSize;
+  InterstitialAd = ads.InterstitialAd;
+  RewardedAd = ads.RewardedAd;
+  AdEventType = ads.AdEventType;
+  RewardedAdEventType = ads.RewardedAdEventType;
+  GoogleMobileAds = ads.GoogleMobileAds;
+} catch (e) {
+  console.log('AdMob not available:', e.message);
+}
 
 const adUnitIds = Platform.select({
   ios: {
-    banner: 'ca-app-pub-5692083748872435/5312178602',
-    interstitial: 'ca-app-pub-5692083748872435/6657049862',
-    rewarded: 'ca-app-pub-5692083748872435/6442083980',
-    appOpen: 'ca-app-pub-5692083748872435/6536069868',
+    banner: 'ca-app-pub-3940256099942544/2934735716',
+    interstitial: 'ca-app-pub-3940256099942544/4411468910',
+    rewarded: 'ca-app-pub-3940256099942544/1712485313',
   },
   android: {
-    banner: 'ca-app-pub-5692083748872435/4605601590',
-    interstitial: 'ca-app-pub-5692083748872435/8232294910',
-    rewarded: 'ca-app-pub-5692083748872435/8173968055',
-    appOpen: 'ca-app-pub-5692083748872435/7953642053',
+    banner: 'ca-app-pub-3940256099942544/6300978111',
+    interstitial: 'ca-app-pub-3940256099942544/1033173712',
+    rewarded: 'ca-app-pub-3940256099942544/5224354917',
   },
 });
 
 const AdManager = {
   initialized: false,
 
-  // Initialize AdMob
   initialize: async () => {
+    if (!GoogleMobileAds) {
+      console.log('AdMob SDK not available');
+      return;
+    }
+    
     try {
-      const { GoogleMobileAds } = require('react-native-google-mobile-ads');
       await GoogleMobileAds().initialize();
       AdManager.initialized = true;
       console.log('AdMob initialized');
@@ -32,28 +47,9 @@ const AdManager = {
     }
   },
 
-  // Show App Open Ad
-  showAppOpenAd: () => {
-    if (!AdManager.initialized) {
-      console.log('AdMob not initialized, cannot show app open ad.');
-      return;
-    }
-
-    const appOpenAd = AppOpenAd.createForAdRequest(adUnitIds.appOpen, {
-      requestNonPersonalizedAdsOnly: true,
-    });
-
-    appOpenAd.addAdEventListener(AdEventType.LOADED, () => {
-      appOpenAd.show();
-    });
-
-    appOpenAd.load();
-  },
-
-  // Show Interstitial Ad (between games)
   showInterstitial: () => {
-    if (!AdManager.initialized) {
-      console.log('AdMob not initialized, cannot show interstitial ad.');
+    if (!AdManager.initialized || !InterstitialAd) {
+      console.log('AdMob not ready for interstitial');
       return;
     }
 
@@ -61,18 +57,22 @@ const AdManager = {
       requestNonPersonalizedAdsOnly: true,
     });
 
-    interstitial.addAdEventListener(AdEventType.LOADED, () => {
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
       interstitial.show();
+    });
+
+    const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      unsubscribeLoaded();
+      unsubscribeClosed();
     });
 
     interstitial.load();
   },
 
-  // Show Rewarded Video Ad (for continue/bonuses)
   showRewarded: (onReward) => {
-    if (!AdManager.initialized) {
-      console.log('AdMob not initialized, cannot show rewarded ad.');
-      onReward(); // Simulate reward for testing
+    if (!AdManager.initialized || !RewardedAd) {
+      console.log('AdMob not ready for rewarded ad, simulating reward');
+      onReward();
       return;
     }
 
@@ -80,19 +80,32 @@ const AdManager = {
       requestNonPersonalizedAdsOnly: true,
     });
 
-    rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+    const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
       rewarded.show();
     });
 
-    rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, (reward) => {
+    const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
       onReward();
+    });
+
+    const unsubscribeClosed = rewarded.addAdEventListener(AdEventType.CLOSED, () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      unsubscribeClosed();
     });
 
     rewarded.load();
   },
 
-  // Banner Ad Component (use in App.js)
   getBannerComponent: () => {
+    if (!AdManager.initialized || !BannerAd) {
+      return (
+        <View style={styles.placeholder}>
+          <Text style={styles.placeholderText}>Ad Space</Text>
+        </View>
+      );
+    }
+
     return (
       <BannerAd
         unitId={adUnitIds.banner}
@@ -104,5 +117,18 @@ const AdManager = {
     );
   },
 };
+
+const styles = StyleSheet.create({
+  placeholder: {
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 12,
+  },
+});
 
 export default AdManager;

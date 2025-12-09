@@ -1,214 +1,319 @@
 # Monetization Guide
 
-## Ad Revenue Breakdown
+## Current Implementation
 
-### Ad Types by eCPM (earnings per 1000 impressions)
+### ✅ Integrated Features
+- Google AdMob SDK 14.3.2
+- Banner ads (bottom of screen)
+- Interstitial ads (every 3 games)
+- Rewarded video ads (continue after game over)
+- Test ad IDs configured
+- Error handling and fallbacks
 
-1. **Rewarded Video**: $10-50 eCPM (BEST)
-2. **Interstitial**: $2-10 eCPM
-3. **Banner**: $0.50-3 eCPM (WORST)
-
-## Optimal Ad Strategy
-
-### Current Implementation
+### Ad Flow
 
 ```
-Game Session Flow:
-1. User plays game
-2. Game over
-3. Every 3rd game → Show Interstitial Ad
-4. Option: Watch Rewarded Ad to continue
-5. Banner ad always visible at bottom
+User Journey:
+1. Opens app → Banner ad loads at bottom
+2. Plays game → Drag blocks, clear lines, score points
+3. Game over → Every 3rd game shows interstitial ad
+4. Option: Watch rewarded ad → Continue game (+50 points)
+5. Repeat
 ```
 
-### Ad Frequency Rules
+## Revenue Model
 
-**DO:**
-- Show interstitial every 2-3 games
-- Offer rewarded ads as optional bonuses
-- Keep banner ads non-intrusive
+### Ad Types & eCPM
 
-**DON'T:**
-- Show ads every game (users will uninstall)
-- Force rewarded ads
-- Block gameplay with ads
+| Ad Type       | eCPM Range | Frequency      | Priority |
+|---------------|------------|----------------|----------|
+| Rewarded      | $10-50     | Optional       | HIGH     |
+| Interstitial  | $2-10      | Every 3 games  | MEDIUM   |
+| Banner        | $0.50-3    | Always visible | LOW      |
 
-## Revenue Calculator
+### Revenue Calculator
 
-### Example: 10,000 Daily Active Users
-
+**10,000 Daily Active Users:**
 ```
 Assumptions:
-- 3 game sessions per user per day
-- 30,000 total sessions
-- 10,000 interstitial ads (every 3rd game)
-- 25% watch rewarded ads = 2,500 views
-- Banner impressions = 30,000
+- 3 sessions per user = 30,000 sessions
+- Interstitial: 10,000 views (every 3rd game)
+- Rewarded: 2,500 views (25% take rate)
+- Banner: 30,000 impressions
 
-Revenue:
+Daily Revenue:
 - Interstitial: 10,000 × $5 eCPM = $50
 - Rewarded: 2,500 × $30 eCPM = $75
 - Banner: 30,000 × $1 eCPM = $30
-
 Total: $155/day = $4,650/month
 ```
 
 ### Scale Projections
 
-| Daily Users | Monthly Revenue |
-|-------------|-----------------|
-| 1,000       | $465            |
-| 5,000       | $2,325          |
-| 10,000      | $4,650          |
-| 50,000      | $23,250         |
-| 100,000     | $46,500         |
+| Daily Users | Monthly Revenue | Annual Revenue |
+|-------------|-----------------|----------------|
+| 1,000       | $465            | $5,580         |
+| 5,000       | $2,325          | $27,900        |
+| 10,000      | $4,650          | $55,800        |
+| 50,000      | $23,250         | $279,000       |
+| 100,000     | $46,500         | $558,000       |
 
-## AdMob Setup Steps
+## AdMob Setup
 
-### 1. Create AdMob Account
-- Go to https://admob.google.com
-- Sign in with Google account
-- Accept terms
+### Step 1: Create AdMob Account
 
-### 2. Add Your App
-- Click "Apps" → "Add App"
-- Select platform (iOS/Android)
-- Enter app name
-- Note your App ID
+1. Go to https://admob.google.com
+2. Sign in with Google account
+3. Accept terms and conditions
 
-### 3. Create Ad Units
+### Step 2: Add Your App
 
-Create 3 ad units:
+1. Click **Apps** → **Add App**
+2. Select platform (iOS/Android)
+3. Enter app name: "GridLock"
+4. Copy **App ID** (format: ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX)
+
+### Step 3: Create Ad Units
+
+Create 3 ad units per platform:
 
 **Banner Ad:**
-- Format: Banner
-- Name: "Main Banner"
+- Format: Banner (320×50)
+- Name: "GridLock Banner"
 - Copy Ad Unit ID
 
 **Interstitial Ad:**
-- Format: Interstitial
-- Name: "Game Over Interstitial"
+- Format: Interstitial (Full Screen)
+- Name: "GridLock Interstitial"
 - Copy Ad Unit ID
 
 **Rewarded Video:**
 - Format: Rewarded
-- Name: "Continue Reward"
+- Name: "GridLock Rewarded"
 - Copy Ad Unit ID
 
-### 4. Update Code
+### Step 4: Update Code
 
-Edit `src/services/AdManager.js`:
+**File: `src/services/AdManager.js`**
+
+Replace test IDs with your real IDs:
 
 ```javascript
-const AD_UNITS = {
-  banner: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
-  interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
-  rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+const adUnitIds = Platform.select({
+  ios: {
+    banner: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  },
+  android: {
+    banner: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+    rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  },
+});
+```
+
+**File: `app.json`**
+
+```json
+"plugins": [
+  [
+    "react-native-google-mobile-ads",
+    {
+      "androidAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+      "iosAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX"
+    }
+  ]
+]
+```
+
+### Step 5: Test
+
+```bash
+npm install
+npx expo start --clear
+```
+
+Test ads will show during development. Real ads appear after publishing.
+
+## Optimization Strategies
+
+### 1. Increase Rewarded Ad Take Rate
+
+**Current:** 25% of users watch rewarded ads
+
+**Improvements:**
+- Increase reward value (50 → 100 points)
+- Add power-ups as rewards (extra bomb/shuffle)
+- Show at strategic moments (near high score)
+- Better UI/UX for ad prompt
+
+**Code:** Edit `App.js`
+```javascript
+const watchAdForContinue = () => {
+  AdManager.showRewarded(() => {
+    setGameOver(false);
+    setScore(score + 100); // Increase reward
+  });
 };
 ```
 
-### 5. Test Ads
+### 2. Optimize Ad Frequency
 
-Use test IDs during development:
+**Current:** Interstitial every 3 games
+
+**Test:** Every 2 games (may increase revenue but hurt retention)
+
+**Code:** Edit `src/hooks/useGame.js`
 ```javascript
-import { TestIds } from 'react-native-google-mobile-ads';
-
-// Use TestIds.BANNER, TestIds.INTERSTITIAL, TestIds.REWARDED
+if (newGamesPlayed % 2 === 0) { // Change from 3 to 2
+  AdManager.showInterstitial();
+}
 ```
 
-### 6. Enable Real Ads
+**Monitor:** Retention rate vs revenue
 
-Before publishing:
-- Replace test IDs with real ad unit IDs
-- Test on real device
-- Verify ads load correctly
+### 3. Improve Retention
 
-## Optimization Tips
+More sessions = more ad impressions
 
-### Increase Revenue
+**Strategies:**
+- Daily challenges with rewards
+- Achievement system
+- Leaderboards
+- Push notifications (reminders)
+- Social sharing features
 
-1. **Improve Retention**
-   - Better gameplay = more sessions = more ads
-   - Target 3+ sessions per user per day
+### 4. Geographic Targeting
 
-2. **Optimize Ad Placement**
-   - A/B test interstitial frequency (every 2 vs 3 games)
-   - Test rewarded ad incentives (50 vs 100 points)
+Higher eCPM in certain regions:
+- US/Canada: $8-15 eCPM
+- UK/Australia: $6-12 eCPM
+- Europe: $4-8 eCPM
+- Asia: $1-4 eCPM
 
-3. **Increase Rewarded Ad Take Rate**
-   - Make rewards valuable (extra life, power-ups)
-   - Show at strategic moments (close to high score)
-
-4. **Geographic Targeting**
-   - US/UK/Canada users = higher eCPM
-   - Market in high-value regions
-
-### Track Performance
-
-Use Firebase Analytics:
-```bash
-npm install @react-native-firebase/analytics
-```
-
-Track:
-- Ad impressions
-- Ad clicks
-- Revenue per user
-- Session length
-- Retention rate
+**Strategy:** Market heavily in high-value regions
 
 ## Legal Requirements
 
 ### Privacy Policy (REQUIRED)
 
-Must include:
-- Data collection disclosure
-- AdMob/Google data usage
-- User rights (GDPR/CCPA)
+Must disclose:
+- AdMob data collection
+- Google Advertising ID usage
+- User tracking
+- GDPR/CCPA compliance
 
-Use generator: https://app-privacy-policy-generator.firebaseapp.com
+**Generate:** https://app-privacy-policy-generator.firebaseapp.com
 
 ### App Store Requirements
 
 **Google Play:**
 - Privacy policy URL
-- Content rating
-- Target audience
+- Ads content rating
+- Target audience (13+)
+- Data safety section
 
 **Apple App Store:**
+- App Tracking Transparency (ATT)
 - Privacy nutrition labels
-- App tracking transparency
-- Age rating
+- Age rating (9+)
+- Ad identifier usage disclosure
 
 ## Payment Setup
 
 ### AdMob Payments
 
-1. Reach $100 threshold
-2. Add payment method (bank transfer/wire)
-3. Verify identity
-4. Payments sent monthly (21st-26th)
+1. **Threshold:** $100 minimum
+2. **Payment Method:** Bank transfer or wire
+3. **Verification:** ID and address verification required
+4. **Schedule:** Monthly (21st-26th of month)
+5. **Tax Forms:** W-9 (US) or W-8BEN (non-US)
 
-### Tax Information
+### Expected Timeline
 
-- US: W-9 form
-- Non-US: W-8BEN form
-- May require tax withholding
+- Month 1: $0 (building user base)
+- Month 2: $50-200 (initial traction)
+- Month 3: $200-500 (growth phase)
+- Month 4+: $500-2,000+ (scale phase)
 
-## Next Steps
+## Best Practices
 
-1. ✅ Implement core gameplay
-2. ✅ Test with AdMob test ads
-3. ✅ Create AdMob account
-4. ✅ Generate ad unit IDs
-5. ✅ Update code with real IDs
-6. ✅ Create privacy policy
-7. ✅ Test on real devices
-8. ✅ Publish to stores
-9. ✅ Monitor revenue in AdMob dashboard
+### ✅ DO:
+- Test ads on real devices
+- Use test IDs during development
+- Monitor AdMob dashboard daily
+- Respond to policy violations quickly
+- Keep ad frequency reasonable
+- Provide value before showing ads
+- Make rewarded ads optional
+
+### ❌ DON'T:
+- Click your own ads (instant ban)
+- Encourage users to click ads
+- Show ads too frequently
+- Hide close buttons
+- Use misleading ad placements
+- Force rewarded ads
+- Violate AdMob policies
+
+## Monitoring Performance
+
+### Key Metrics
+
+Track in AdMob dashboard:
+- **Impressions:** Total ad views
+- **eCPM:** Earnings per 1000 impressions
+- **Fill Rate:** % of ad requests filled
+- **Click-Through Rate (CTR):** % of ads clicked
+- **Revenue:** Daily/monthly earnings
+
+### Analytics Events
+
+Currently logged (console only):
+- `game_over` - Score and continuation
+- `block_placed` - Lines cleared
+- `watch_ad_for_continue` - Rewarded ad viewed
+
+**Future:** Integrate Firebase Analytics for real tracking
+
+## Troubleshooting
+
+### Ads Not Loading
+- Check internet connection
+- Verify ad unit IDs are correct
+- Check AdMob account status
+- Review policy compliance
+- Test with test IDs first
+
+### Low eCPM
+- Improve app quality (higher ratings)
+- Increase user engagement
+- Target high-value regions
+- Enable mediation (advanced)
+
+### Account Suspended
+- Review AdMob policies
+- Check for invalid traffic
+- Appeal if wrongly suspended
+- Never click own ads
 
 ## Resources
 
-- AdMob Help: https://support.google.com/admob
-- Best Practices: https://admob.google.com/home/resources/
-- Policy Center: https://support.google.com/admob/answer/6128543
+- [AdMob Help Center](https://support.google.com/admob)
+- [Policy Center](https://support.google.com/admob/answer/6128543)
+- [Best Practices](https://admob.google.com/home/resources/)
+- [Payment Guide](https://support.google.com/admob/answer/2784628)
+
+## Next Steps
+
+1. ✅ Create AdMob account
+2. ✅ Generate ad unit IDs
+3. ✅ Update code with real IDs
+4. ✅ Create privacy policy
+5. ✅ Test on real devices
+6. ✅ Build production version
+7. ✅ Submit to app stores
+8. ✅ Monitor revenue in dashboard
+9. ✅ Optimize based on data
+10. ✅ Scale user acquisition

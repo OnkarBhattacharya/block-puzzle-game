@@ -63,6 +63,7 @@ export const useAppState = () => {
 
   return {
     theme,
+    setTheme,
     toggleTheme,
     soundEnabled,
     setSoundEnabled,
