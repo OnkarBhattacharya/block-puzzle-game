@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import PropTypes from 'prop-types';
 
 const SplashScreen = ({ theme }) => {
   return (
@@ -22,5 +23,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+
+SplashScreen.propTypes = {
+  theme: PropTypes.object.isRequired,
+};
 
 export default SplashScreen;

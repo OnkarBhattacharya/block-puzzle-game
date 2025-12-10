@@ -33,3 +33,5 @@ logs
 # Build
 ios/
 android/
+
+AUDIT_REPORT.md

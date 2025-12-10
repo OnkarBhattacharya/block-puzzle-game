@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import PropTypes from 'prop-types';
 
 const HowToPlayScreen = ({ theme }) => {
   return (
@@ -58,5 +59,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 });
+
+HowToPlayScreen.propTypes = {
+  theme: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
 export default HowToPlayScreen;

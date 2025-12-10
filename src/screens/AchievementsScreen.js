@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
+import PropTypes from 'prop-types';
 
 const AchievementsScreen = ({ achievements }) => {
   return (
@@ -49,5 +50,9 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+
+AchievementsScreen.propTypes = {
+  achievements: PropTypes.object.isRequired,
+};
 
 export default AchievementsScreen;

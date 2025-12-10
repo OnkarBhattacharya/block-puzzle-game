@@ -1,9 +1,11 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, BackHandler, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import GameBoard from './src/components/GameBoard';
 import BlockPreview from './src/components/BlockPreview';
 import AdManager from './src/services/AdManager';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import { REWARDS } from './src/utils/constants';
 import AchievementsScreen from './src/screens/AchievementsScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -65,7 +67,7 @@ function App() {
     loadGame();
   }, []);
 
-  const quitGame = () => {
+  const quitGame = useCallback(() => {
     Alert.alert(
       "Quit Game",
       "Are you sure you want to quit? Your current progress will be saved.",
@@ -78,14 +80,14 @@ function App() {
       ],
       { cancelable: false }
     );
-  };
+  }, []);
 
-  const watchAdForContinue = () => {
+  const watchAdForContinue = useCallback(() => {
     AdManager.showRewarded(() => {
       setGameOver(false);
-      setScore(score + 50);
+      setScore(score + REWARDS.CONTINUE_BONUS);
     });
-  };
+  }, [score, setGameOver, setScore]);
 
   if (isSplashVisible) {
     return <SplashScreen theme={theme} />;
@@ -364,8 +366,10 @@ const styles = StyleSheet.create({
 
 export default function AppWrapper() {
   return (
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

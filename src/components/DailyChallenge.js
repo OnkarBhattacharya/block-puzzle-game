@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 
 const DailyChallenge = ({ challenge, progress }) => {
   return (
@@ -34,5 +35,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+
+DailyChallenge.propTypes = {
+  challenge: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    target: PropTypes.number.isRequired,
+  }).isRequired,
+  progress: PropTypes.number.isRequired,
+};
 
 export default DailyChallenge;

@@ -10,9 +10,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import SoundManager from '../services/SoundManager';
+import { TIMING, REWARDS, GAME_CONFIG } from '../utils/constants';
 
 const { width } = Dimensions.get('window');
-const GRID_SIZE = 8;
+const GRID_SIZE = GAME_CONFIG.GRID_SIZE;
 const CELL_SIZE = Math.floor((width - 60) / GRID_SIZE);
 
 const GameBoard = ({
@@ -42,7 +43,9 @@ const GameBoard = ({
   }, [gameOver]);
 
   const canPlaceBlock = (gridX, gridY, block) => {
-    if (!block) return false;
+    if (!block || !Array.isArray(block.shape)) return false;
+    if (typeof gridX !== 'number' || typeof gridY !== 'number') return false;
+    if (!Array.isArray(grid) || grid.length === 0) return false;
     for (let y = 0; y < block.shape.length; y++) {
       for (let x = 0; x < block.shape[y].length; x++) {
         if (block.shape[y][x] === 1) {
@@ -58,7 +61,8 @@ const GameBoard = ({
   };
 
   const placeBlock = (gridX, gridY, block) => {
-    const newGrid = grid.map(row => [...row]);
+    setGrid(prevGrid => {
+      const newGrid = prevGrid.map(row => [...row]);
     let blocksPlaced = 0;
     for (let y = 0; y < block.shape.length; y++) {
       for (let x = 0; x < block.shape[y].length; x++) {
@@ -81,15 +85,18 @@ const GameBoard = ({
     }
 
     setGrid(newGrid);
-    onScoreUpdate(prev => prev + blocksPlaced + (linesCleared * 10 * comboMultiplier));
+    onScoreUpdate(prev => prev + (blocksPlaced * REWARDS.BLOCK_PLACEMENT) + (linesCleared * REWARDS.LINE_CLEAR_BASE * comboMultiplier));
     
-    setTimeout(() => {
-      if (checkGameOver(newGrid)) {
-        onGameOver();
-      } else {
-        onBlockPlaced(linesCleared);
-      }
-    }, 100);
+      setTimeout(() => {
+        if (checkGameOver(newGrid)) {
+          onGameOver();
+        } else {
+          onBlockPlaced(linesCleared);
+        }
+      }, TIMING.GAME_OVER_DELAY);
+      
+      return newGrid;
+    });
   };
 
   const gestureHandler = useAnimatedGestureHandler({
@@ -263,4 +270,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GameBoard;
+export default React.memo(GameBoard, (prevProps, nextProps) => {
+  // Return true if props are equal (skip re-render), false otherwise
+  return (
+    prevProps.grid === nextProps.grid &&
+    prevProps.gameOver === nextProps.gameOver &&
+    prevProps.theme === nextProps.theme &&
+    prevProps.activeBlock === nextProps.activeBlock &&
+    prevProps.soundEnabled === nextProps.soundEnabled &&
+    prevProps.hapticsEnabled === nextProps.hapticsEnabled &&
+    prevProps.comboMultiplier === nextProps.comboMultiplier
+  );
+});

@@ -3,14 +3,15 @@
 ## Prerequisites
 
 - Node.js 18+ ([Download](https://nodejs.org))
-- npm or yarn
-- Expo Go app on your phone (optional)
+- npm
+- Expo Go app on your phone (optional for physical device testing)
 
 ## Installation
 
 ```bash
 cd block-puzzle-game
 npm install
+npm start --clear
 ```
 
 ## Running the Game
@@ -27,7 +28,7 @@ npm install
    ```
 
 3. **Scan QR Code**
-   - iOS: Use Camera app
+   - iOS: Use Camera app or Expo Go app
    - Android: Use Expo Go app
 
 ### Option 2: iOS Simulator (Mac Only)
@@ -44,10 +45,49 @@ npm run android
 
 ## Game Controls
 
-- **Drag blocks** from bottom preview onto grid
-- **Tap Pause** to access settings
-- **Clear lines** by filling rows or columns
-- **Use power-ups** strategically (bomb/shuffle)
+- **Drag blocks** from bottom preview onto grid to place them
+- **Tap Pause** button to access settings and resume
+- **Clear lines** by completing full rows or columns
+- **Earn points** for cleared lines (bonus for combos)
+- **Watch ads** to continue after game over (optional rewarded ads)
+
+## Building for Production
+
+### Update Configuration
+
+Before deploying to App Store or Google Play, update `app.json`:
+```json
+{
+  "expo": {
+    "owner": "yourorganization",
+    "slug": "gridlock",
+    "plugins": ["react-native-google-mobile-ads"]
+  }
+}
+```
+
+### Get Production Ad Unit IDs
+
+Replace test ad IDs in `src/services/AdManager.js` with your AdMob production unit IDs:
+- iOS and Android Banner, Interstitial, and Rewarded ad unit IDs
+- Visit [Google AdMob Console](https://admob.google.com) to get your IDs
+
+### Build Commands
+
+```bash
+# Build for App Store (ipa)
+eas build --platform ios
+
+# Build for Google Play (aab)
+eas build --platform android
+```
+
+## Troubleshooting
+
+- **Connection failed?** Ensure your device is on the same WiFi network
+- **QR code not scanning?** Try typing the URL manually or use tunneling: `npm start -- --tunnel`
+- **Build errors?** Clear cache: `npm start --clear`
+- **Ad errors?** Replace test ad unit IDs with your production IDs
 
 ## Testing Features
 

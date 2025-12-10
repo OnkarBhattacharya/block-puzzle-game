@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Vibration } from 'react-native';
 import { getRandomBlock } from '../utils/blocks';
 import { saveScore, getHighScore, saveGameState, loadGameState } from '../utils/storage';
+import { REWARDS, GAME_CONFIG } from '../utils/constants';
 import SoundManager from '../services/SoundManager';
 import AdManager from '../services/AdManager';
 
@@ -111,7 +112,7 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
     const newGamesPlayed = gamesPlayed + 1;
     setGamesPlayed(newGamesPlayed);
 
-    if (newGamesPlayed % 3 === 0) {
+    if (newGamesPlayed % GAME_CONFIG.AD_FREQUENCY === 0) {
       AdManager.showInterstitial();
     }
 
@@ -123,21 +124,22 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
   const handleBlockPlaced = (linesCleared) => {
     if (soundEnabled) SoundManager.playSound('place');
     if (hapticsEnabled) Vibration.vibrate(50);
-    setHistory([...history, { grid, score, combo: comboMultiplier }]);
+    setHistory(prev => [...prev, { grid, score, combo: comboMultiplier }]);
 
-
-
-    const remainingBlocks = previewBlocks.slice(1);
-    if (remainingBlocks.length === 0) {
-      generateNewBlocks();
-    } else {
+    setPreviewBlocks(prev => {
+      const remainingBlocks = prev.slice(1);
+      if (remainingBlocks.length === 0) {
+        generateNewBlocks();
+        return prev;
+      }
       const newBlocks = [...remainingBlocks, getRandomBlock()];
-      setPreviewBlocks(newBlocks);
       setActiveBlock(newBlocks[0]);
-    }
+      return newBlocks;
+    });
+
     checkAchievements(score, linesCleared);
     if (linesCleared > 0) {
-        updateDailyChallengeProgress('lines', linesCleared);
+      updateDailyChallengeProgress('lines', linesCleared);
     }
     updateDailyChallengeProgress('score', score);
   };
@@ -157,7 +159,7 @@ export const useGame = (soundEnabled, hapticsEnabled) => {
   const watchAdForContinue = () => {
     AdManager.showRewarded(() => {
       setGameOver(false);
-      setScore(score + 50);
+      setScore(score + REWARDS.CONTINUE_BONUS);
 
     });
   };

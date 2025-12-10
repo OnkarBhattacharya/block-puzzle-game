@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Logger } from './logger';
 
 const KEYS = {
   HIGH_SCORE: '@high_score',
@@ -6,11 +7,18 @@ const KEYS = {
   GAME_STATE: '@game_state',
 };
 
+const validateGameState = (state) => {
+  return state && 
+    Array.isArray(state.grid) && 
+    typeof state.score === 'number' &&
+    typeof state.highScore === 'number';
+};
+
 export const saveScore = async (score) => {
   try {
     await AsyncStorage.setItem(KEYS.HIGH_SCORE, score.toString());
   } catch (error) {
-    console.error('Error saving score:', error);
+    Logger.error('Storage', 'Error saving score', error);
   }
 };
 
@@ -19,7 +27,7 @@ export const getHighScore = async () => {
     const score = await AsyncStorage.getItem(KEYS.HIGH_SCORE);
     return score ? parseInt(score, 10) : 0;
   } catch (error) {
-    console.error('Error loading score:', error);
+    Logger.error('Storage', 'Error loading score', error);
     return 0;
   }
 };
@@ -28,7 +36,7 @@ export const saveGamesPlayed = async (count) => {
   try {
     await AsyncStorage.setItem(KEYS.GAMES_PLAYED, count.toString());
   } catch (error) {
-    console.error('Error saving games played:', error);
+    Logger.error('Storage', 'Error saving games played', error);
   }
 };
 
@@ -37,26 +45,28 @@ export const getGamesPlayed = async () => {
     const count = await AsyncStorage.getItem(KEYS.GAMES_PLAYED);
     return count ? parseInt(count, 10) : 0;
   } catch (error) {
-    console.error('Error loading games played:', error);
+    Logger.error('Storage', 'Error loading games played', error);
     return 0;
   }
 };
 
 export const saveGameState = async (state) => {
-    try {
-        const jsonState = JSON.stringify(state);
-        await AsyncStorage.setItem(KEYS.GAME_STATE, jsonState);
-    } catch (error) {
-        console.error('Error saving game state:', error);
-    }
+  try {
+    const jsonState = JSON.stringify(state);
+    await AsyncStorage.setItem(KEYS.GAME_STATE, jsonState);
+  } catch (error) {
+    Logger.error('Storage', 'Error saving game state', error);
+  }
 };
 
 export const loadGameState = async () => {
-    try {
-        const jsonState = await AsyncStorage.getItem(KEYS.GAME_STATE);
-        return jsonState ? JSON.parse(jsonState) : null;
-    } catch (error) {
-        console.error('Error loading game state:', error);
-        return null;
-    }
+  try {
+    const jsonState = await AsyncStorage.getItem(KEYS.GAME_STATE);
+    if (!jsonState) return null;
+    const state = JSON.parse(jsonState);
+    return validateGameState(state) ? state : null;
+  } catch (error) {
+    Logger.error('Storage', 'Error loading game state', error);
+    return null;
+  }
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import PropTypes from 'prop-types';
 
 const { width } = Dimensions.get('window');
 const PREVIEW_CELL_SIZE = 12;
@@ -38,6 +39,14 @@ const BlockPreview = ({ blocks, onBlockSelect }) => {
       ))}
     </View>
   );
+};
+
+BlockPreview.propTypes = {
+  blocks: PropTypes.arrayOf(PropTypes.shape({
+    shape: PropTypes.arrayOf(PropTypes.array).isRequired,
+    color: PropTypes.string.isRequired,
+  })),
+  onBlockSelect: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -81,4 +90,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BlockPreview;
+export default React.memo(BlockPreview, (prevProps, nextProps) => {
+  // Return true if props are equal (skip re-render), false otherwise
+  return (
+    prevProps.blocks === nextProps.blocks &&
+    prevProps.onBlockSelect === nextProps.onBlockSelect
+  );
+});

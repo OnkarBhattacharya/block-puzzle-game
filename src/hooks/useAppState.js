@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 import { themes } from '../utils/themes';
 import SoundManager from '../services/SoundManager';
 import AdManager from '../services/AdManager';
+import { TIMING } from '../utils/constants';
 import { saveGameState, loadGameState } from '../utils/storage';
 import { achievements as achievementsList, getAchievements, saveAchievements } from '../utils/achievements';
 import { getDailyChallenge } from '../utils/challenges';
@@ -42,22 +43,24 @@ export const useAppState = () => {
   }, []);
 
   const prepareApp = async () => {
+    let timeoutId;
     try {
       await SoundManager.loadSounds();
       AdManager.initialize();
       const savedState = await loadGameState();
       if (savedState) {
-          setSoundEnabled(savedState.soundEnabled !== null ? savedState.soundEnabled : true);
-          setHapticsEnabled(savedState.hapticsEnabled !== null ? savedState.hapticsEnabled : true);
+        setSoundEnabled(savedState.soundEnabled !== null ? savedState.soundEnabled : true);
+        setHapticsEnabled(savedState.hapticsEnabled !== null ? savedState.hapticsEnabled : true);
       }
     } catch (e) {
       console.warn(e);
     } finally {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setIsAppReady(true);
         setIsSplashVisible(false);
-      }, 2000);
+      }, TIMING.SPLASH_DURATION);
     }
+    return () => clearTimeout(timeoutId);
   };
 
 

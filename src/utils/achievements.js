@@ -1,3 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Logger } from './logger';
+
+const ACHIEVEMENT_KEY = '@achievements';
 
 export const achievements = {
   score_1000: {
@@ -33,11 +37,19 @@ export const achievements = {
 };
 
 export const getAchievements = async () => {
-  // In a real app, you would load this from storage
-  return achievements;
+  try {
+    const jsonAchievements = await AsyncStorage.getItem(ACHIEVEMENT_KEY);
+    return jsonAchievements ? JSON.parse(jsonAchievements) : achievements;
+  } catch (error) {
+    Logger.error('Achievements', 'Error loading achievements', error);
+    return achievements;
+  }
 };
 
 export const saveAchievements = async (updatedAchievements) => {
-  // In a real app, you would save this to storage
-  console.log('Achievements saved:', updatedAchievements);
+  try {
+    await AsyncStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(updatedAchievements));
+  } catch (error) {
+    Logger.error('Achievements', 'Error saving achievements', error);
+  }
 };

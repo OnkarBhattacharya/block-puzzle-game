@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types';
 
 const PauseMenu = ({ theme, onResume, onRestart, onSettings, onHowToPlay }) => {
   return (
@@ -59,5 +60,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+PauseMenu.propTypes = {
+  theme: PropTypes.object.isRequired,
+  onResume: PropTypes.func.isRequired,
+  onRestart: PropTypes.func.isRequired,
+  onSettings: PropTypes.func.isRequired,
+  onHowToPlay: PropTypes.func.isRequired,
+};
 
 export default PauseMenu;

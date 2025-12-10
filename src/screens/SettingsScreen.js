@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView } from 'react-native';
+import PropTypes from 'prop-types';
 
 const SettingsScreen = ({ 
   theme, 
@@ -116,5 +117,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+SettingsScreen.propTypes = {
+  theme: PropTypes.object.isRequired,
+  soundEnabled: PropTypes.bool.isRequired,
+  setSoundEnabled: PropTypes.func.isRequired,
+  hapticsEnabled: PropTypes.bool.isRequired,
+  setHapticsEnabled: PropTypes.func.isRequired,
+  setTheme: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
 export default SettingsScreen;

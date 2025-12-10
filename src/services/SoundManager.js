@@ -1,4 +1,5 @@
 import { Audio } from 'expo-av';
+import { Logger } from '../utils/logger';
 
 const sounds = {
   place: require('../assets/sounds/place.mp3'),
@@ -20,9 +21,9 @@ const SoundManager = {
         const { sound } = await Audio.Sound.createAsync(sounds[key]);
         soundObjects[key] = sound;
       }
-      console.log('Sounds loaded');
+      Logger.info('SoundManager', 'Sounds loaded');
     } catch (error) {
-      console.error('Error loading sounds:', error);
+      Logger.error('SoundManager', 'Error loading sounds', error);
     }
   },
 
@@ -32,7 +33,7 @@ const SoundManager = {
         await soundObjects[key].replayAsync();
       }
     } catch (error) {
-      console.error(`Error playing sound ${key}:`, error);
+      Logger.error('SoundManager', `Error playing sound ${key}`, error);
     }
   },
 };
