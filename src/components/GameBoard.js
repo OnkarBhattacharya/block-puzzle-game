@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, Dimensions, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -12,9 +12,9 @@ import * as Haptics from 'expo-haptics';
 import SoundManager from '../services/SoundManager';
 import { TIMING, REWARDS, GAME_CONFIG } from '../utils/constants';
 
-const { width } = Dimensions.get('window');
 const GRID_SIZE = GAME_CONFIG.GRID_SIZE;
-const CELL_SIZE = Math.floor((width - 60) / GRID_SIZE);
+const PADDING = 30;
+const BASE_CELL_SIZE = 45;
 
 const GameBoard = ({
   grid,
@@ -30,6 +30,18 @@ const GameBoard = ({
   hapticsEnabled,
   theme,
 }) => {
+  const windowDimensions = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const boardRef = useRef(null);
+  const draggableRef = useRef(null);
+  
+  const [boardLayout, setBoardLayout] = useState(null);
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const windowWidth = isWeb ? windowDimensions.width : Dimensions.get('window').width;
+  const CELL_SIZE = isWeb ? Math.max(30, Math.floor((windowWidth - 80) / GRID_SIZE)) : Math.floor((windowWidth - 60) / GRID_SIZE);
+  
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -141,10 +153,46 @@ const GameBoard = ({
   const handleDrop = (gridX, gridY, block) => {
     if (canPlaceBlock(gridX, gridY, block)) {
       placeBlock(gridX, gridY, block);
-      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (hapticsEnabled && !isWeb) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       if (soundEnabled) SoundManager.playSound('place');
     } else {
-      if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      if (hapticsEnabled && !isWeb) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  };
+
+  const handleCellPress = (rowIndex, colIndex) => {
+    if (isWeb && activeBlock && !gameOver) {
+      handleDrop(colIndex, rowIndex, activeBlock);
+    }
+  };
+
+  const handleWebMouseDown = (e) => {
+    if (!isWeb || !activeBlock || gameOver) return;
+    setIsDragging(true);
+    setDragPos({ x: e.nativeEvent.offsetX || e.clientX, y: e.nativeEvent.offsetY || e.clientY });
+  };
+
+  const handleWebMouseMove = (e) => {
+    if (!isWeb || !isDragging) return;
+    const rect = boardRef.current?.getBoundingClientRect?.();
+    if (rect) {
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      setDragPos({ x: newX, y: newY });
+    }
+  };
+
+  const handleWebMouseUp = (e) => {
+    if (!isWeb || !isDragging || !boardRef.current) {
+      setIsDragging(false);
+      return;
+    }
+    setIsDragging(false);
+    const rect = boardRef.current.getBoundingClientRect?.();
+    if (rect && activeBlock) {
+      const gridX = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+      const gridY = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+      handleDrop(gridX, gridY, activeBlock);
     }
   };
 
@@ -180,55 +228,140 @@ const GameBoard = ({
 
   return (
     <View style={styles.container}>
-      {activeBlock && !gameOver && (
-        <PanGestureHandler onGestureEvent={gestureHandler}>
-          <Animated.View style={[styles.draggableBlock, animatedStyle]}>
-            {activeBlock.shape.map((row, rowIndex) => (
+      {isWeb ? (
+        // Web version: Use mouse events
+        <>
+          {activeBlock && !gameOver && isDragging && (
+            <View
+              ref={draggableRef}
+              style={[
+                styles.webDraggableBlock,
+                {
+                  left: dragPos.x - CELL_SIZE,
+                  top: dragPos.y - CELL_SIZE,
+                },
+              ]}
+              onMouseMove={handleWebMouseMove}
+              onMouseUp={handleWebMouseUp}
+              onMouseLeave={handleWebMouseUp}
+            >
+              {activeBlock.shape.map((row, rowIndex) => (
+                <View key={rowIndex} style={styles.row}>
+                  {row.map((cell, colIndex) => (
+                    <View
+                      key={`${rowIndex}-${colIndex}`}
+                      style={[
+                        styles.cell,
+                        {
+                          width: CELL_SIZE,
+                          height: CELL_SIZE,
+                          backgroundColor: cell === 1 ? activeBlock.color : 'transparent',
+                          borderColor: cell === 1 ? '#fff' : 'transparent',
+                        },
+                      ]}
+                    />
+                  ))}
+                </View>
+              ))}
+            </View>
+          )}
+          <View
+            ref={boardRef}
+            style={[
+              styles.board,
+              {
+                backgroundColor: theme.boardBackground,
+                borderColor: theme.borderColor,
+                borderWidth: 2,
+              },
+            ]}
+            onMouseDown={handleWebMouseDown}
+            onMouseMove={handleWebMouseMove}
+            onMouseUp={handleWebMouseUp}
+            onMouseLeave={handleWebMouseUp}
+          >
+            {grid.map((row, rowIndex) => (
               <View key={rowIndex} style={styles.row}>
                 {row.map((cell, colIndex) => (
-                  <View
+                  <TouchableOpacity
                     key={`${rowIndex}-${colIndex}`}
                     style={[
                       styles.cell,
                       {
                         width: CELL_SIZE,
                         height: CELL_SIZE,
-                        backgroundColor: cell === 1 ? activeBlock.color : 'transparent',
-                        borderColor: cell === 1 ? '#fff' : 'transparent',
+                        backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
+                        borderColor: theme.cellBorderColor,
                       },
                     ]}
+                    onPress={() => handleCellPress(rowIndex, colIndex)}
+                    disabled={false}
                   />
                 ))}
               </View>
             ))}
-          </Animated.View>
-        </PanGestureHandler>
-      )}
-      
-      <View style={[styles.board, { 
-        backgroundColor: theme.boardBackground, 
-        borderColor: theme.borderColor,
-        borderWidth: 2,
-      }]}>
-        {grid.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((cell, colIndex) => (
-              <View
-                key={`${rowIndex}-${colIndex}`}
-                style={[
-                  styles.cell,
-                  {
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
-                    borderColor: theme.cellBorderColor,
-                  },
-                ]}
-              />
+          </View>
+        </>
+      ) : (
+        // Native version: Use gesture handler
+        <>
+          {activeBlock && !gameOver && (
+            <PanGestureHandler onGestureEvent={gestureHandler}>
+              <Animated.View style={[styles.draggableBlock, animatedStyle]}>
+                {activeBlock.shape.map((row, rowIndex) => (
+                  <View key={rowIndex} style={styles.row}>
+                    {row.map((cell, colIndex) => (
+                      <View
+                        key={`${rowIndex}-${colIndex}`}
+                        style={[
+                          styles.cell,
+                          {
+                            width: CELL_SIZE,
+                            height: CELL_SIZE,
+                            backgroundColor: cell === 1 ? activeBlock.color : 'transparent',
+                            borderColor: cell === 1 ? '#fff' : 'transparent',
+                          },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                ))}
+              </Animated.View>
+            </PanGestureHandler>
+          )}
+          <View
+            style={[
+              styles.board,
+              {
+                backgroundColor: theme.boardBackground,
+                borderColor: theme.borderColor,
+                borderWidth: 2,
+              },
+            ]}
+          >
+            {grid.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+                {row.map((cell, colIndex) => (
+                  <TouchableOpacity
+                    key={`${rowIndex}-${colIndex}`}
+                    style={[
+                      styles.cell,
+                      {
+                        width: CELL_SIZE,
+                        height: CELL_SIZE,
+                        backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
+                        borderColor: theme.cellBorderColor,
+                      },
+                    ]}
+                    onPress={() => handleCellPress(rowIndex, colIndex)}
+                    disabled={true}
+                  />
+                ))}
+              </View>
             ))}
           </View>
-        ))}
-      </View>
+        </>
+      )}
     </View>
   );
 };
@@ -239,6 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
+    position: 'relative',
   },
   board: {
     padding: 5,
@@ -260,7 +394,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 1000,
     top: 100,
-    left: width / 2 - 50,
+    left: '50%',
+    marginLeft: -50,
+  },
+  webDraggableBlock: {
+    position: 'absolute',
+    zIndex: 1000,
+    pointerEvents: 'none',
+    opacity: 0.8,
   },
 });
 

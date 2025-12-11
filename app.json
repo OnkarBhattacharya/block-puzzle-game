@@ -4,25 +4,16 @@
     "slug": "gridlock",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.gridlock",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.yourcompany.gridlock"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.yourcompany.gridlock"
     },
     "plugins": [
@@ -33,13 +24,6 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ]
-    ],
-    "extra": {
-      "iosAppId": "ca-app-pub-3940256099942544~1458002511",
-      "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-      "eas": {
-        "projectId": "74424210-c365-41b0-aa43-8357f4fa8cfc"
-      }
-    }
+    ]
   }
 }

@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 
-const { width } = Dimensions.get('window');
-const PREVIEW_CELL_SIZE = 12;
-
 const BlockPreview = ({ blocks, onBlockSelect }) => {
+  const windowDimensions = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const windowWidth = isWeb ? windowDimensions.width : Dimensions.get('window').width;
+  const PREVIEW_CELL_SIZE = isWeb ? 14 : 12;
+  const slotWidth = isWeb ? Math.max(60, Math.floor((windowWidth - 60) / 3) - 10) : windowWidth / 3 - 20;
+  
   if (!blocks || blocks.length === 0) return null;
 
   return (
@@ -13,7 +16,7 @@ const BlockPreview = ({ blocks, onBlockSelect }) => {
       {blocks.map((block, index) => (
         <TouchableOpacity 
           key={index} 
-          style={styles.blockSlot} 
+          style={[styles.blockSlot, { width: slotWidth }]} 
           onPress={() => onBlockSelect(block)}
           activeOpacity={0.7}
         >
@@ -26,6 +29,8 @@ const BlockPreview = ({ blocks, onBlockSelect }) => {
                     style={[
                       styles.cell,
                       {
+                        width: PREVIEW_CELL_SIZE,
+                        height: PREVIEW_CELL_SIZE,
                         backgroundColor: cell === 1 ? block.color : 'transparent',
                         borderColor: cell === 1 ? '#fff' : 'transparent',
                       },
@@ -61,7 +66,6 @@ const styles = StyleSheet.create({
     borderTopColor: '#ddd',
   },
   blockSlot: {
-    width: width / 3 - 20,
     height: 70,
     justifyContent: 'center',
     alignItems: 'center',
@@ -83,8 +87,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   cell: {
-    width: PREVIEW_CELL_SIZE,
-    height: PREVIEW_CELL_SIZE,
     borderWidth: 1,
     borderRadius: 1,
   },
