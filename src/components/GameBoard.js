@@ -60,87 +60,6 @@ const GameBoard = ({
     return true;
   };
 
-  const placeBlock = (gridX, gridY, block) => {
-    setGrid(prevGrid => {
-      const newGrid = prevGrid.map(row => [...row]);
-    let blocksPlaced = 0;
-    for (let y = 0; y < block.shape.length; y++) {
-      for (let x = 0; x < block.shape[y].length; x++) {
-        if (block.shape[y][x] === 1) {
-          if (gridY + y < GRID_SIZE && gridX + x < GRID_SIZE) {
-            newGrid[gridY + y][gridX + x] = 1;
-            blocksPlaced++;
-          }
-        }
-      }
-    }
-
-    const linesCleared = checkAndClearLines(newGrid);
-    if (linesCleared === 0) {
-      setComboMultiplier(1);
-    } else {
-      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      if (soundEnabled) SoundManager.playSound('clear');
-      setComboMultiplier(prev => prev + 1);
-    }
-
-    setGrid(newGrid);
-    onScoreUpdate(prev => prev + (blocksPlaced * REWARDS.BLOCK_PLACEMENT) + (linesCleared * REWARDS.LINE_CLEAR_BASE * comboMultiplier));
-    
-      setTimeout(() => {
-        if (checkGameOver(newGrid)) {
-          onGameOver();
-        } else {
-          onBlockPlaced(linesCleared);
-        }
-      }, TIMING.GAME_OVER_DELAY);
-      
-      return newGrid;
-    });
-  };
-
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
-      ctx.startY = translateY.value;
-      scale.value = withSpring(1.2);
-    },
-    onActive: (event, ctx) => {
-      translateX.value = ctx.startX + event.translationX;
-      translateY.value = ctx.startY + event.translationY;
-    },
-    onEnd: (event) => {
-      const boardOffset = 30;
-      const headerHeight = 250;
-      const gridX = Math.floor((event.absoluteX - boardOffset) / CELL_SIZE);
-      const gridY = Math.floor((event.absoluteY - headerHeight) / CELL_SIZE);
-      runOnJS(handleDrop)(gridX, gridY, activeBlock);
-      translateX.value = withSpring(0);
-      translateY.value = withSpring(0);
-      scale.value = withSpring(1);
-    },
-  });
-
-  const handleDrop = (gridX, gridY, block) => {
-    if (canPlaceBlock(gridX, gridY, block)) {
-      placeBlock(gridX, gridY, block);
-      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      if (soundEnabled) SoundManager.playSound('place');
-    } else {
-      if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
-  };
-
-
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value }
-    ],
-  }));
-
   const checkAndClearLines = (currentGrid) => {
     let linesCleared = 0;
     const newGrid = currentGrid.map(row => [...row]);
@@ -166,7 +85,6 @@ const GameBoard = ({
       colsToClear.forEach(col => {
         newGrid.forEach(row => (row[col] = 0));
       });
-      setGrid(newGrid);
     }
     
     return linesCleared;
@@ -183,6 +101,82 @@ const GameBoard = ({
     }
     return true;
   };
+
+  const placeBlock = (gridX, gridY, block) => {
+    const newGrid = grid.map(row => [...row]);
+    let blocksPlaced = 0;
+    
+    for (let y = 0; y < block.shape.length; y++) {
+      for (let x = 0; x < block.shape[y].length; x++) {
+        if (block.shape[y][x] === 1) {
+          if (gridY + y < GRID_SIZE && gridX + x < GRID_SIZE) {
+            newGrid[gridY + y][gridX + x] = 1;
+            blocksPlaced++;
+          }
+        }
+      }
+    }
+
+    const linesCleared = checkAndClearLines(newGrid);
+    if (linesCleared === 0) {
+      setComboMultiplier(1);
+    } else {
+      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      if (soundEnabled) SoundManager.playSound('clear');
+      setComboMultiplier(prev => prev + 1);
+    }
+
+    setGrid(newGrid);
+    onScoreUpdate(prev => prev + (blocksPlaced * REWARDS.BLOCK_PLACEMENT) + (linesCleared * REWARDS.LINE_CLEAR_BASE * comboMultiplier));
+    
+    setTimeout(() => {
+      if (checkGameOver(newGrid)) {
+        onGameOver();
+      } else {
+        onBlockPlaced(linesCleared);
+      }
+    }, TIMING.GAME_OVER_DELAY);
+  };
+
+  const handleDrop = (gridX, gridY, block) => {
+    if (canPlaceBlock(gridX, gridY, block)) {
+      placeBlock(gridX, gridY, block);
+      if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (soundEnabled) SoundManager.playSound('place');
+    } else {
+      if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  };
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, ctx) => {
+      ctx.startX = translateX.value;
+      ctx.startY = translateY.value;
+      scale.value = withSpring(1.2);
+    },
+    onActive: (event, ctx) => {
+      translateX.value = ctx.startX + event.translationX;
+      translateY.value = ctx.startY + event.translationY;
+    },
+    onEnd: (event) => {
+      const boardOffset = 30;
+      const headerHeight = 250;
+      const gridX = Math.floor((event.absoluteX - boardOffset) / CELL_SIZE);
+      const gridY = Math.floor((event.absoluteY - headerHeight) / CELL_SIZE);
+      runOnJS(handleDrop)(gridX, gridY, activeBlock);
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+      scale.value = withSpring(1);
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value }
+    ],
+  }));
 
   return (
     <View style={styles.container}>
@@ -216,25 +210,25 @@ const GameBoard = ({
         borderColor: theme.borderColor,
         borderWidth: 2,
       }]}>
-          {grid.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.row}>
-              {row.map((cell, colIndex) => (
-                <View
-                  key={`${rowIndex}-${colIndex}`}
-                  style={[
-                    styles.cell,
-                    {
-                      width: CELL_SIZE,
-                      height: CELL_SIZE,
-                      backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
-                      borderColor: theme.cellBorderColor,
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-          ))}
-        </View>
+        {grid.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.row}>
+            {row.map((cell, colIndex) => (
+              <View
+                key={`${rowIndex}-${colIndex}`}
+                style={[
+                  styles.cell,
+                  {
+                    width: CELL_SIZE,
+                    height: CELL_SIZE,
+                    backgroundColor: cell === 1 ? theme.filledColor : theme.backgroundColor,
+                    borderColor: theme.cellBorderColor,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
@@ -270,15 +264,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(GameBoard, (prevProps, nextProps) => {
-  // Return true if props are equal (skip re-render), false otherwise
-  return (
-    prevProps.grid === nextProps.grid &&
-    prevProps.gameOver === nextProps.gameOver &&
-    prevProps.theme === nextProps.theme &&
-    prevProps.activeBlock === nextProps.activeBlock &&
-    prevProps.soundEnabled === nextProps.soundEnabled &&
-    prevProps.hapticsEnabled === nextProps.hapticsEnabled &&
-    prevProps.comboMultiplier === nextProps.comboMultiplier
-  );
-});
+export default GameBoard;
