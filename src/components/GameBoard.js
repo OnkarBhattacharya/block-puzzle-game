@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import SoundManager from '../services/SoundManager';
+import FloatingPopup from './FloatingPopup';
 import { TIMING, REWARDS, GAME_CONFIG } from '../utils/constants';
 
 const GRID_SIZE = GAME_CONFIG.GRID_SIZE;
@@ -41,6 +42,8 @@ const GameBoard = ({
   
   const windowWidth = isWeb ? windowDimensions.width : Dimensions.get('window').width;
   const CELL_SIZE = isWeb ? Math.max(30, Math.floor((windowWidth - 80) / GRID_SIZE)) : Math.floor((windowWidth - 60) / GRID_SIZE);
+  
+  const [floatingPopups, setFloatingPopups] = useState([]);
   
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -130,6 +133,8 @@ const GameBoard = ({
     }
 
     const linesCleared = checkAndClearLines(newGrid);
+    const scoreEarned = (blocksPlaced * REWARDS.BLOCK_PLACEMENT) + (linesCleared * REWARDS.LINE_CLEAR_BASE * comboMultiplier);
+    
     if (linesCleared === 0) {
       setComboMultiplier(1);
     } else {
@@ -138,8 +143,21 @@ const GameBoard = ({
       setComboMultiplier(prev => prev + 1);
     }
 
+    const popupId = Date.now() + Math.random();
+    setFloatingPopups(prev => [...prev, {
+      id: popupId,
+      x: gridX * CELL_SIZE + PADDING,
+      y: gridY * CELL_SIZE + 200,
+      score: scoreEarned,
+      text: linesCleared > 0 ? `Line Clear! x${comboMultiplier}` : null,
+    }]);
+
+    setTimeout(() => {
+      setFloatingPopups(prev => prev.filter(p => p.id !== popupId));
+    }, 2000);
+
     setGrid(newGrid);
-    onScoreUpdate(prev => prev + (blocksPlaced * REWARDS.BLOCK_PLACEMENT) + (linesCleared * REWARDS.LINE_CLEAR_BASE * comboMultiplier));
+    onScoreUpdate(prev => prev + scoreEarned);
     
     setTimeout(() => {
       if (checkGameOver(newGrid)) {
@@ -228,6 +246,15 @@ const GameBoard = ({
 
   return (
     <View style={styles.container}>
+      {floatingPopups.map(popup => (
+        <FloatingPopup
+          key={popup.id}
+          text={popup.text}
+          score={popup.score}
+          theme={theme}
+          duration={2000}
+        />
+      ))}
       {isWeb ? (
         // Web version: Use mouse events
         <>

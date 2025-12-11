@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useCallback } from 'react';
+import React, { useContext, useEffect, useCallback, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, BackHandler, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import GameBoard from './src/components/GameBoard';
@@ -12,9 +12,17 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import HowToPlayScreen from './src/screens/HowToPlayScreen';
 import PauseMenu from './src/components/PauseMenu';
+import GameModeSelector from './src/components/GameModeSelector';
+import PlayerStats from './src/components/PlayerStats';
+import MilestoneNotification from './src/components/MilestoneNotification';
+import GameModeTimer from './src/components/GameModeTimer';
+import MovesCounter from './src/components/MovesCounter';
+import TutorialOverlay from './src/components/TutorialOverlay';
 
 import DailyChallenge from './src/components/DailyChallenge';
 import { AppProvider, AppContext } from './src/context/AppContext';
+import { GAME_MODES } from './src/utils/progression';
+import { isTutorialCompleted, markTutorialComplete } from './src/utils/storage';
 
 function App() {
   const {
@@ -45,6 +53,16 @@ function App() {
     dailyChallengeProgress,
     soundEnabled,
     hapticsEnabled,
+    playerLevel,
+    totalExp,
+    dailyStreak,
+    gameMode,
+    setGameMode,
+    modeStats,
+    milestoneMessage,
+    setMilestoneMessage,
+    movesRemaining,
+    setMovesRemaining,
 
     handleGameOver,
     handleBlockPlaced,
@@ -61,11 +79,27 @@ function App() {
     setTheme
   } = useContext(AppContext);
 
+  const [gameModeVisible, setGameModeVisible] = useState(false);
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+
   useEffect(() => {
     AdManager.initialize();
     prepareApp();
     loadGame();
+    checkTutorialStatus();
   }, []);
+
+  const checkTutorialStatus = async () => {
+    const completed = await isTutorialCompleted();
+    if (!completed) {
+      setTutorialVisible(true);
+    }
+  };
+
+  const handleTutorialComplete = async () => {
+    setTutorialVisible(false);
+    await markTutorialComplete();
+  };
 
   const quitGame = useCallback(() => {
     Alert.alert(
@@ -106,11 +140,22 @@ function App() {
     <View style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
       <StatusBar style="light" />
       <View style={[styles.header, { backgroundColor: theme.filledColor }]}>
-        <Text style={[styles.title, { color: theme.backgroundColor }]}>GridLock</Text>
+        <View style={styles.titleModeContainer}>
+          <Text style={[styles.title, { color: theme.backgroundColor }]}>GridLock</Text>
+          <TouchableOpacity 
+            style={[styles.modeButton, { backgroundColor: theme.clearingColor }]}
+            onPress={() => setGameModeVisible(true)}
+          >
+            <Text style={[styles.modeButtonText, { color: theme.backgroundColor }]}>
+              {Object.values(GAME_MODES).find(m => m.id === gameMode)?.icon} {Object.values(GAME_MODES).find(m => m.id === gameMode)?.name}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.scoreContainer}>
           <Text style={[styles.score, { color: theme.backgroundColor }]}>Score: {score}</Text>
           <Text style={[styles.highScore, { color: theme.backgroundColor }]}>Best: {highScore}</Text>
         </View>
+        <PlayerStats playerLevel={playerLevel} totalExp={totalExp} dailyStreak={dailyStreak} theme={theme} />
         <View style={styles.controlsContainer}>
             <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.clearingColor }]} onPress={handleUndo}>
                 <Text style={[styles.buttonText, { color: theme.backgroundColor }]}>Undo</Text>
@@ -123,6 +168,10 @@ function App() {
             )}
         </View>
         {dailyChallenge && <DailyChallenge challenge={dailyChallenge} progress={dailyChallengeProgress} />}
+      </View>
+      <View style={styles.modeIndicatorsContainer}>
+        <GameModeTimer gameMode={gameMode} onTimeUp={handleGameOver} theme={theme} />
+        <MovesCounter gameMode={gameMode} movesRemaining={movesRemaining} theme={theme} />
       </View>
       <GameBoard
         grid={grid}
@@ -142,6 +191,13 @@ function App() {
         <View style={styles.bottomControls}>
           <BlockPreview blocks={previewBlocks} onBlockSelect={setActiveBlock} />
         </View>
+      )}
+      {milestoneMessage && (
+        <MilestoneNotification 
+          milestone={milestoneMessage} 
+          theme={theme}
+          onComplete={() => setMilestoneMessage(null)}
+        />
       )}
       {gameOver && !isPaused && (
         <View style={styles.gameOverModal}>
@@ -226,6 +282,18 @@ function App() {
         }}>
         <HowToPlayScreen theme={theme} onClose={() => setHowToPlayVisible(false)} />
       </Modal>
+      <GameModeSelector 
+        visible={gameModeVisible}
+        onClose={() => setGameModeVisible(false)}
+        onSelectMode={setGameMode}
+        theme={theme}
+        modeStats={modeStats}
+      />
+      <TutorialOverlay
+        visible={tutorialVisible}
+        onComplete={handleTutorialComplete}
+        theme={theme}
+      />
     </View>
   );
 }
@@ -361,6 +429,31 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         position: 'absolute',
         bottom: 20,
+    },
+    titleModeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        paddingHorizontal: 10,
+    },
+    modeButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modeButtonText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    modeIndicatorsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        gap: 10,
     }
 });
 

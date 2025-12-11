@@ -5,6 +5,13 @@ const KEYS = {
   HIGH_SCORE: '@high_score',
   GAMES_PLAYED: '@games_played',
   GAME_STATE: '@game_state',
+  DAILY_STREAK: '@daily_streak',
+  LAST_PLAYED_DATE: '@last_played_date',
+  PLAYER_LEVEL: '@player_level',
+  TOTAL_EXP: '@total_exp',
+  GAME_MODE: '@game_mode',
+  MODE_STATS: '@mode_stats',
+  TUTORIAL_COMPLETED: '@tutorial_completed',
 };
 
 const validateGameState = (state) => {
@@ -68,5 +75,97 @@ export const loadGameState = async () => {
   } catch (error) {
     Logger.error('Storage', 'Error loading game state', error);
     return null;
+  }
+};
+
+export const updateDailyStreak = async () => {
+  try {
+    const today = new Date().toDateString();
+    const lastPlayedDate = await AsyncStorage.getItem(KEYS.LAST_PLAYED_DATE);
+    const currentStreak = await AsyncStorage.getItem(KEYS.DAILY_STREAK);
+    const streak = currentStreak ? parseInt(currentStreak, 10) : 0;
+
+    if (lastPlayedDate === today) {
+      return streak;
+    }
+
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const newStreak = lastPlayedDate === yesterday ? streak + 1 : 1;
+
+    await AsyncStorage.setItem(KEYS.DAILY_STREAK, newStreak.toString());
+    await AsyncStorage.setItem(KEYS.LAST_PLAYED_DATE, today);
+    return newStreak;
+  } catch (error) {
+    Logger.error('Storage', 'Error updating daily streak', error);
+    return 0;
+  }
+};
+
+export const getDailyStreak = async () => {
+  try {
+    const streak = await AsyncStorage.getItem(KEYS.DAILY_STREAK);
+    return streak ? parseInt(streak, 10) : 0;
+  } catch (error) {
+    Logger.error('Storage', 'Error loading daily streak', error);
+    return 0;
+  }
+};
+
+export const savePlayerLevel = async (level, totalExp) => {
+  try {
+    await AsyncStorage.setItem(KEYS.PLAYER_LEVEL, level.toString());
+    await AsyncStorage.setItem(KEYS.TOTAL_EXP, totalExp.toString());
+  } catch (error) {
+    Logger.error('Storage', 'Error saving player level', error);
+  }
+};
+
+export const getPlayerLevel = async () => {
+  try {
+    const level = await AsyncStorage.getItem(KEYS.PLAYER_LEVEL);
+    const totalExp = await AsyncStorage.getItem(KEYS.TOTAL_EXP);
+    return {
+      level: level ? parseInt(level, 10) : 1,
+      totalExp: totalExp ? parseInt(totalExp, 10) : 0,
+    };
+  } catch (error) {
+    Logger.error('Storage', 'Error loading player level', error);
+    return { level: 1, totalExp: 0 };
+  }
+};
+
+export const saveModeStats = async (stats) => {
+  try {
+    await AsyncStorage.setItem(KEYS.MODE_STATS, JSON.stringify(stats));
+  } catch (error) {
+    Logger.error('Storage', 'Error saving mode stats', error);
+  }
+};
+
+export const getModeStats = async () => {
+  try {
+    const stats = await AsyncStorage.getItem(KEYS.MODE_STATS);
+    return stats ? JSON.parse(stats) : { timeAttack: {}, survival: {}, limitedMoves: {} };
+  } catch (error) {
+    Logger.error('Storage', 'Error loading mode stats', error);
+    return { timeAttack: {}, survival: {}, limitedMoves: {} };
+  }
+};
+
+export const markTutorialComplete = async () => {
+  try {
+    await AsyncStorage.setItem(KEYS.TUTORIAL_COMPLETED, 'true');
+  } catch (error) {
+    Logger.error('Storage', 'Error marking tutorial complete', error);
+  }
+};
+
+export const isTutorialCompleted = async () => {
+  try {
+    const completed = await AsyncStorage.getItem(KEYS.TUTORIAL_COMPLETED);
+    return completed === 'true';
+  } catch (error) {
+    Logger.error('Storage', 'Error checking tutorial status', error);
+    return false;
   }
 };

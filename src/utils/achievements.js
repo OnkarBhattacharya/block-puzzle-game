@@ -16,6 +16,12 @@ export const achievements = {
     description: 'Reach a score of 5000 in a single game.',
     unlocked: false,
   },
+  score_10000: {
+    id: 'score_10000',
+    title: 'Score 10000',
+    description: 'Reach a score of 10000 in a single game.',
+    unlocked: false,
+  },
   lines_10: {
     id: 'lines_10',
     title: 'Clear 10 lines',
@@ -28,10 +34,58 @@ export const achievements = {
     description: 'Clear 100 lines in total.',
     unlocked: false,
   },
+  lines_500: {
+    id: 'lines_500',
+    title: 'Clear 500 lines',
+    description: 'Clear 500 lines in total.',
+    unlocked: false,
+  },
   games_10: {
     id: 'games_10',
     title: 'Play 10 games',
     description: 'Play 10 games.',
+    unlocked: false,
+  },
+  games_50: {
+    id: 'games_50',
+    title: 'Play 50 games',
+    description: 'Play 50 games.',
+    unlocked: false,
+  },
+  combo_5: {
+    id: 'combo_5',
+    title: 'Combo Master',
+    description: 'Achieve a combo multiplier of 5x.',
+    unlocked: false,
+  },
+  power_up_master: {
+    id: 'power_up_master',
+    title: 'Power Up Master',
+    description: 'Use 20 power-ups in total.',
+    unlocked: false,
+  },
+  daily_challenge: {
+    id: 'daily_challenge',
+    title: 'Daily Driver',
+    description: 'Complete a daily challenge.',
+    unlocked: false,
+  },
+  level_5: {
+    id: 'level_5',
+    title: 'Rising Star',
+    description: 'Reach level 5.',
+    unlocked: false,
+  },
+  level_10: {
+    id: 'level_10',
+    title: 'Veteran Player',
+    description: 'Reach level 10.',
+    unlocked: false,
+  },
+  streak_7: {
+    id: 'streak_7',
+    title: 'Week Warrior',
+    description: 'Achieve a 7-day play streak.',
     unlocked: false,
   },
 };
