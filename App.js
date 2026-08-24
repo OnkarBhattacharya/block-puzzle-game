@@ -83,10 +83,15 @@ function App() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
 
   useEffect(() => {
-    AdManager.initialize();
-    prepareApp();
-    loadGame();
-    checkTutorialStatus();
+    const init = async () => {
+      try {
+        AdManager.initialize();
+        await Promise.all([prepareApp(), loadGame(), checkTutorialStatus()]);
+      } catch (e) {
+        console.warn('App initialization error:', e);
+      }
+    };
+    init();
   }, []);
 
   const checkTutorialStatus = async () => {

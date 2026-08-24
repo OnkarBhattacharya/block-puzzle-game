@@ -32,7 +32,7 @@ export const useAppState = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        AdManager.showAppOpenAd();
+        AdManager.showAppOpenAd?.();
       }
       appState.current = nextAppState;
     });

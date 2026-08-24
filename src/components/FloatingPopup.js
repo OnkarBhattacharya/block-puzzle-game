@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
-export default function FloatingPopup({ text, score, theme, duration = 2000 }) {
+export default function FloatingPopup({ text, score, theme, duration = 2000, x = 0, y = 0 }) {
   const [fadeAnim] = useState(new Animated.Value(1));
   const [translateAnim] = useState(new Animated.Value(0));
 
@@ -27,6 +27,8 @@ export default function FloatingPopup({ text, score, theme, duration = 2000 }) {
         {
           opacity: fadeAnim,
           transform: [{ translateY: translateAnim }],
+          left: x,
+          top: y,
         },
       ]}
     >

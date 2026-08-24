@@ -61,12 +61,12 @@ npm run android
 
 ## 📱 Tech Stack
 
-- **Expo SDK**: 54.0.27
+- **Expo SDK**: ^54.0.27
 - **React**: 18.3.1
-- **React Native**: 0.76.5
-- **Reanimated**: 3.16.7 (smooth animations)
-- **Gesture Handler**: 2.29.1 (drag-and-drop)
-- **Google Mobile Ads**: 14.11.0
+- **React Native**: ^0.76.5
+- **Reanimated**: ~3.16.0 (smooth animations)
+- **Gesture Handler**: ~2.20.0 (drag-and-drop)
+- **Google Mobile Ads**: ^14.3.2
 - **AsyncStorage**: 2.2.0
 
 ## ⚡ Recent Improvements
@@ -110,7 +110,7 @@ npm run android
 - ✅ Updated AsyncStorage, Gesture Handler, React Web
 - ✅ Added Error Boundary component for crash prevention
 - ✅ Optimized App.js with useCallback hooks
-- ✅ Memoized GameBoard and BlockPreview components
+- ✅ Memoized BlockPreview component (GameBoard not yet memoized)
 - ✅ All security vulnerabilities resolved (0 found)
 
 ## 📂 Project Structure
@@ -122,8 +122,6 @@ src/
 │   ├── BlockPreview.js           # Block selection area (memoized)
 │   ├── ErrorBoundary.js          # Error boundary for crash handling
 │   ├── PauseMenu.js              # Pause overlay
-│   ├── PowerUps.js               # Bomb/shuffle buttons
-│   ├── Rotation.js               # Block rotation
 │   ├── DailyChallenge.js         # Challenge display
 │   ├── GameModeSelector.js       # Mode selection modal with stats
 │   ├── PlayerStats.js            # Level, EXP bar, and streak display

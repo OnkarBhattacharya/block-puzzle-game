@@ -249,6 +249,8 @@ const GameBoard = ({
       {floatingPopups.map(popup => (
         <FloatingPopup
           key={popup.id}
+          x={popup.x}
+          y={popup.y}
           text={popup.text}
           score={popup.score}
           theme={theme}
@@ -369,7 +371,7 @@ const GameBoard = ({
             {grid.map((row, rowIndex) => (
               <View key={rowIndex} style={styles.row}>
                 {row.map((cell, colIndex) => (
-                  <TouchableOpacity
+                  <View
                     key={`${rowIndex}-${colIndex}`}
                     style={[
                       styles.cell,
@@ -380,8 +382,6 @@ const GameBoard = ({
                         borderColor: theme.cellBorderColor,
                       },
                     ]}
-                    onPress={() => handleCellPress(rowIndex, colIndex)}
-                    disabled={true}
                   />
                 ))}
               </View>
